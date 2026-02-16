@@ -3,7 +3,52 @@ package com.example.archtst.mapper;
 import com.example.archtst.dto.RequestDTO;
 import com.example.archtst.dto.ResponseDTO;
 import com.example.archtst.entity.User;
-//import com.example.archtst.service.impl.UserServiceImpl;
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Component
+public class UserMapper {
+
+    private final ModelMapper modelMapper;
+
+    // Spring автоматически внедрит бин ModelMapper
+    public UserMapper(ModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
+    }
+
+    // Entity -> ResponseDTO
+    public ResponseDTO userToResponseDTO(User user) {
+        if (user == null) return null;
+        return modelMapper.map(user, ResponseDTO.class);
+    }
+
+    // List<Entity> -> List<ResponseDTO>
+    public List<ResponseDTO> listToResponseDTO(List<User> users) {
+        if (users == null || users.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return users.stream()
+                .map(this::userToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    // RequestDTO -> Entity
+    public User requestToEntity(RequestDTO dto) {
+        if (dto == null) return null;
+        return modelMapper.map(dto, User.class);
+    }
+}
+/*
+package com.example.archtst.mapper;
+
+import com.example.archtst.dto.RequestDTO;
+import com.example.archtst.dto.ResponseDTO;
+import com.example.archtst.entity.User;
 import org.springframework.stereotype.Component;
 
 import java.time.format.DateTimeFormatter;
@@ -12,11 +57,6 @@ import java.util.stream.Collectors;
 
 @Component
 public class UserMapper {
-
-    /*private final UserServiceImpl userServiceImpl;
-    public UserMapper(UserServiceImpl userServiceImpl) {
-        this.userServiceImpl = userServiceImpl;
-    }*/
 
     // Entity -> ResponseDTO
     public ResponseDTO userToResponseDTO(User user) {
@@ -51,4 +91,4 @@ public class UserMapper {
                 .build();
     }
 
-}
+}*/

@@ -1,7 +1,5 @@
 package com.example.archtst.service.impl;
 
-import com.example.archtst.dto.RequestDTO;
-import com.example.archtst.dto.ResponseDTO;
 import com.example.archtst.entity.User;
 import com.example.archtst.repository.UserRepository;
 import com.example.archtst.service.UserService;
@@ -59,7 +57,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> getAllUsers() {
         log.info("Получение всех пользователей");
-        return userRepository.findAll();
+        List<User> tmp = userRepository.findAll();
+        return tmp;
     }
 
     @Override

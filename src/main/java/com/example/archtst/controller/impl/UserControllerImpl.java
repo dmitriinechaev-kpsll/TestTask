@@ -55,7 +55,8 @@ public class UserControllerImpl implements UserController {
     @GetMapping
     public ResponseEntity<List<ResponseDTO>> getAllUsers() {
         log.info("GET /api/users - Получение всех пользователей");
-        return ResponseEntity.ok(userMapper.listToResponseDTO(userService.getAllUsers()));
+        List<ResponseDTO> tmp = userMapper.listToResponseDTO(userService.getAllUsers());
+        return ResponseEntity.ok(tmp);
     }
 
     @GetMapping("/{id}")
