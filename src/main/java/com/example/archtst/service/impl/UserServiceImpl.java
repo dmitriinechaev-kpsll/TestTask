@@ -1,7 +1,7 @@
 package com.example.archtst.service.impl;
 
-import com.example.archtst.dto.UserRequestDTO;
-import com.example.archtst.dto.UserResponseDTO;
+import com.example.archtst.dto.RequestDTO;
+import com.example.archtst.dto.ResponseDTO;
 import com.example.archtst.entity.User;
 import com.example.archtst.repository.UserRepository;
 import com.example.archtst.service.UserService;
@@ -22,11 +22,16 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public UserResponseDTO createUser(UserRequestDTO userDTO) {
-        log.info("Создание пользователя: {}", userDTO.getEmail());
-
-        if (userRepository.existsByEmail(userDTO.getEmail())){
-            UserResponseDTO respDto = new UserResponseDTO();
+    public User createUser(User newUser) {
+        log.info("Создание пользователя: {}", newUser.getEmail());
+        if (userRepository.findByEmail(newUser.getEmail()).isPresent()) {
+            log.info("Такой пользователь уже существует!!");
+            throw new RuntimeException("Такой пользователь уже существует!!");
+            //return userRepository.findByEmail(newUser.getEmail()).get();
+        }
+        return userRepository.save(newUser);
+    /*    if (userRepository.existsByEmail(userDTO.getEmail())){
+            ResponseDTO respDto = new ResponseDTO();
             respDto.setError("Email уже зарегистрирован");
             respDto.setEmail(userDTO.getEmail());
             return respDto;
@@ -41,55 +46,44 @@ public class UserServiceImpl implements UserService {
 
             User savedUser = userRepository.save(user);
             log.info("Пользователь создан с ID: {}", savedUser.getId());
-            return UserResponseDTO.fromEntity(savedUser);
+            return ResponseDTO.fromEntity(savedUser);
         } catch (Exception e) {
             log.error("Ошибка создания пользователя: {}", e.getMessage());
-            UserResponseDTO respDto = new UserResponseDTO();
+            ResponseDTO respDto = new ResponseDTO();
             respDto.setError("Ошибка создания пользователя: "+e.getMessage());
             respDto.setEmail(userDTO.getEmail());
             return respDto;
-        }
+        }*/
     }
 
     @Override
-    public List<UserResponseDTO> getAllUsers() {
+    public List<User> getAllUsers() {
         log.info("Получение всех пользователей");
-        return userRepository.findAll()
-                .stream()
-                .map(UserResponseDTO::fromEntity)
-                .collect(Collectors.toList());
+        return userRepository.findAll();
     }
 
     @Override
-    public Optional<UserResponseDTO> getUserById(String id) {
+    public Optional<User> getUserById(String id) {
         log.info("Поиск пользователя по ID: {}", id);
-        return userRepository.findById(id)
-                .map(UserResponseDTO::fromEntity);
+        return userRepository.findById(id);
     }
 
     @Override
-    public Optional<UserResponseDTO> getUserByEmail(String email) {
+    public Optional<User> getUserByEmail(String email) {
         log.info("Поиск пользователя по email: {}", email);
-        return userRepository.findByEmail(email)
-                .map(UserResponseDTO::fromEntity);
+        return userRepository.findByEmail(email);
     }
 
     @Override
-    public List<UserResponseDTO> searchUsersByName(String name) {
+    public List<User> searchUsersByName(String name) {
         log.info("Поиск пользователей по имени: {}", name);
-        return userRepository.findByNameContainingIgnoreCase(name)
-                .stream()
-                .map(UserResponseDTO::fromEntity)
-                .collect(Collectors.toList());
+        return userRepository.findByNameContainingIgnoreCase(name);
     }
 
     @Override
-    public List<UserResponseDTO> getUsersOlderThan(Integer age) {
+    public List<User> getUsersOlderThan(Integer age) {
         log.info("Поиск пользователей старше: {}", age);
-        return userRepository.findByAgeGreaterThan(age)
-                .stream()
-                .map(UserResponseDTO::fromEntity)
-                .collect(Collectors.toList());
+        return userRepository.findByAgeGreaterThan(age);
     }
 
     @Override
@@ -102,11 +96,6 @@ public class UserServiceImpl implements UserService {
         }
         log.warn("Пользователь не найден: {}", id);
         return false;
-    }
-
-    @Override
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
     }
 
     @Override

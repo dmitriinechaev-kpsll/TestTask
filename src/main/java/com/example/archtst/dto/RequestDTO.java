@@ -4,7 +4,7 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
-public class UserRequestDTO {
+public class RequestDTO {
 
     @NotBlank(message = "Имя обязательно")
     @Size(min = 2, max = 100, message = "Имя должно быть от 2 до 100 символов")
