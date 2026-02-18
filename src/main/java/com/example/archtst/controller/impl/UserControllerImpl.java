@@ -1,5 +1,6 @@
 package com.example.archtst.controller.impl;
 
+import com.example.archtst.constant.Urls;
 import com.example.archtst.controller.UserController;
 import com.example.archtst.entity.User;
 import com.example.archtst.mapper.UserMapper;
@@ -9,13 +10,15 @@ import com.example.archtst.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,9 +31,10 @@ public class UserControllerImpl implements UserController {
 
     @PostMapping
     public ResponseEntity<?> createUser(@Valid @RequestBody RequestDTO userDTO) {
-        log.info("POST /api/users - Создание пользователя: {}", userDTO.getEmail());
-        User newUser = userMapper.requestToEntity(userDTO);
-        try{
+        log.info("POST " + Urls.BASE_URL + " - Создание пользователя: {}", userDTO.getEmail());
+        User savedUser = userService.createUser(userMapper.requestToEntity(userDTO));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.userToResponseDTO(savedUser));
+        /*try{
             User savedUser = userService.createUser(newUser);
             ResponseDTO resp = userMapper.userToResponseDTO(savedUser);
             return ResponseEntity.status(HttpStatus.CREATED).body(resp);
@@ -40,7 +44,7 @@ public class UserControllerImpl implements UserController {
             error.put("error", "Ошибка: " + e.getMessage() );
             error.put("email", userDTO.getEmail());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
-        }
+        }*/
         /*ResponseDTO createdUser = userService.createUser(userDTO);
         if (createdUser.getError() != null) {
             Map<String, String> error = new HashMap<>();
@@ -53,84 +57,61 @@ public class UserControllerImpl implements UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ResponseDTO>> getAllUsers() {
-        log.info("GET /api/users - Получение всех пользователей");
-        List<ResponseDTO> tmp = userMapper.listToResponseDTO(userService.getAllUsers());
-        return ResponseEntity.ok(tmp);
+    public ResponseEntity<Page<ResponseDTO>> getAllUsers(
+            @PageableDefault(size = 20, page = 0) Pageable pageable) {
+        // log.info("GET " + Urls.BASE_URL + " - Получение всех пользователей с пагинацией");
+        Page<User> usersPage = userService.getAllUsers(pageable);
+        Page<ResponseDTO> responsePage = userMapper.pageToResponseDTO(usersPage);
+        return ResponseEntity.ok(responsePage);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable String id) {
-        log.info("GET /api/users/{} - Поиск пользователя", id);
-        Optional<User> optionalUser = userService.getUserById(id);
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-            return ResponseEntity.ok(userMapper.userToResponseDTO(user));
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    @GetMapping(Urls.BY_ID)
+    public ResponseEntity<?> getUserById(@PathVariable UUID id) {
+        // log.info("GET " + Urls.BASE_URL + "{} - Поиск пользователя", id);
+        User user = userService.getUserById(id);
+        return ResponseEntity.ok(userMapper.userToResponseDTO(user));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable String id) {
-        log.info("DELETE /api/users/{} - Удаление пользователя", id);
-
-        if (userService.deleteUser(id)) {
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Пользователь успешно удален");
-            response.put("id", id);
-            return ResponseEntity.ok(response);
-        }
-        return ResponseEntity.notFound().build();
+    @DeleteMapping(Urls.BY_ID)
+    @ResponseStatus(HttpStatus.NO_CONTENT) // Явно возвращаем 204
+    public void deleteUser(@PathVariable UUID id) {
+        log.info("DELETE " + Urls.BASE_URL + "{} - Удаление пользователя", id);
+        userService.deleteUser(id);
     }
 
-    @GetMapping("/search")
+    @GetMapping(Urls.SEARCH)
     public ResponseEntity<?> searchUsers(
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) Integer olderThan) {
+            @RequestParam(required = false) Integer olderThan,
+            Pageable pageable) {
 
-        log.info("GET /api/users/search - Поиск: email={}, name={}, olderThan={}",
+        log.info("GET " + Urls.BASE_URL + Urls.SEARCH + " - Поиск: email={}, name={}, olderThan={}",
                 email, name, olderThan);
 
         if (email != null) {
-            /*return userService.getUserByEmail(email)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());*/
-            Optional<User> optionalUser = userService.getUserByEmail(email);
-            if (optionalUser.isPresent()) {
-                User user = optionalUser.get();
-                return ResponseEntity.ok(userMapper.userToResponseDTO(user));
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+            User user = userService.getUserByEmail(email);
+            return ResponseEntity.ok(userMapper.userToResponseDTO(user));
         }
 
         if (name != null) {
-            List<User> listUsers = userService.searchUsersByName(name);
-            if (listUsers.isEmpty()){
-                return ResponseEntity.notFound().build();
-            } else {
-                return ResponseEntity.ok(userMapper.listToResponseDTO(listUsers));
-            }
+            Page<User> usersPage = userService.searchUsersByName(name, pageable);
+            Page<ResponseDTO> responsePage = userMapper.pageToResponseDTO(usersPage);
+            return ResponseEntity.ok(responsePage);
         }
 
         if (olderThan != null) {
-            //return ResponseEntity.ok(userService.getUsersOlderThan(olderThan));
-            List<User> listUsers = userService.getUsersOlderThan(olderThan);
-            if (listUsers.isEmpty()){
-                return ResponseEntity.notFound().build();
-            } else {
-                return ResponseEntity.ok(userMapper.listToResponseDTO(listUsers));
-            }
+            Page<User> usersPage = userService.getUsersOlderThan(olderThan, pageable);
+            Page<ResponseDTO> responsePage = userMapper.pageToResponseDTO(usersPage);
+            return ResponseEntity.ok(responsePage);
         }
 
         return ResponseEntity.badRequest().body("Укажите параметр поиска");
     }
 
-    @GetMapping("/stats")
+    @GetMapping(Urls.STATS)
     public ResponseEntity<Map<String, Object>> getStats() {
-        log.info("GET /api/users/stats - Статистика");
+        log.info("GET " + Urls.BASE_URL + Urls.STATS + " - Статистика");
 
         Map<String, Object> stats = new HashMap<>();
         stats.put("totalUsers", userService.getTotalUsersCount());
@@ -141,7 +122,7 @@ public class UserControllerImpl implements UserController {
         return ResponseEntity.ok(stats);
     }
 
-    @GetMapping("/health")
+    @GetMapping(Urls.HEALTH)
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("API is working! PostgreSQL connected.");
     }

@@ -7,7 +7,7 @@ import lombok.Data;
 public class RequestDTO {
 
     @NotBlank(message = "Имя обязательно")
-    @Size(min = 5, max = 100, message = "Имя должно быть от 2 до 100 символов")
+    @Size(min = 2, max = 100, message = "Имя должно быть от 2 до 100 символов")
     private String name;
 
     @NotBlank(message = "Email обязателен")

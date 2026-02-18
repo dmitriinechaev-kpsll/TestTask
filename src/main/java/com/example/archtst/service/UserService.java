@@ -3,18 +3,22 @@ package com.example.archtst.service;
 import com.example.archtst.dto.RequestDTO;
 import com.example.archtst.dto.ResponseDTO;
 import com.example.archtst.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface UserService {
     User createUser(User newUser);
-    List<User> getAllUsers();
-    Optional<User> getUserById(String id);
-    Optional<User> getUserByEmail(String email);
-    List<User> searchUsersByName(String name);
-    List<User> getUsersOlderThan(Integer age);
-    boolean deleteUser(String id);
+    //List<User> getAllUsers();
+    Page<User> getAllUsers(Pageable pageable);
+    User getUserById(UUID id);
+    User getUserByEmail(String email);
+    Page<User> searchUsersByName(String name, Pageable pageable);
+    Page<User> getUsersOlderThan(Integer age, Pageable pageable);
+    boolean deleteUser(UUID id);
     long getTotalUsersCount();
 
  }

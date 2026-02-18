@@ -1,39 +1,45 @@
 package com.example.archtst.controller;
 
+import com.example.archtst.constant.Urls;
 import com.example.archtst.dto.RequestDTO;
 import com.example.archtst.dto.ResponseDTO;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-@RequestMapping("/api/users")
+@RequestMapping(Urls.BASE_URL)
 public interface UserController {
 
     @PostMapping
     ResponseEntity<?> createUser(@Valid @RequestBody RequestDTO userDTO);
 
     @GetMapping
-    ResponseEntity<List<ResponseDTO>> getAllUsers();
+    ResponseEntity<Page<ResponseDTO>> getAllUsers(Pageable pageable);
+    //ResponseEntity<List<ResponseDTO>> getAllUsers();
 
-    @GetMapping("/{id}")
-    ResponseEntity<?> getUserById(@PathVariable String id);
+    @GetMapping(Urls.BY_ID)
+    ResponseEntity<?> getUserById(@PathVariable UUID id);
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable String id);
+    @DeleteMapping(Urls.BY_ID)
+    public void deleteUser(@PathVariable UUID id);
 
-    @GetMapping("/search")
+    @GetMapping(Urls.SEARCH)
     public ResponseEntity<?> searchUsers(
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) Integer olderThan);
+            @RequestParam(required = false) Integer olderThan,
+            Pageable pageable);
 
-    @GetMapping("/stats")
+    @GetMapping(Urls.STATS)
     ResponseEntity<Map<String, Object>> getStats();
 
-    @GetMapping("/health")
+    @GetMapping(Urls.HEALTH)
     public ResponseEntity<String> healthCheck();
 
 

@@ -1,15 +1,18 @@
 package com.example.archtst.service.impl;
 
 import com.example.archtst.entity.User;
+import com.example.archtst.exception.UserAlreadyExistException;
+import com.example.archtst.exception.UserNotFoundException;
 import com.example.archtst.repository.UserRepository;
 import com.example.archtst.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -22,79 +25,60 @@ public class UserServiceImpl implements UserService {
     @Override
     public User createUser(User newUser) {
         log.info("Создание пользователя: {}", newUser.getEmail());
-        if (userRepository.findByEmail(newUser.getEmail()).isPresent()) {
+        Optional<User> optionalUser = userRepository.findByEmail(newUser.getEmail());
+        if (optionalUser.isPresent()) {
             log.info("Такой пользователь уже существует!!");
-            throw new RuntimeException("Такой пользователь уже существует!!");
-            //return userRepository.findByEmail(newUser.getEmail()).get();
+            throw new UserAlreadyExistException("email: " + newUser.getEmail());
         }
         return userRepository.save(newUser);
-    /*    if (userRepository.existsByEmail(userDTO.getEmail())){
-            ResponseDTO respDto = new ResponseDTO();
-            respDto.setError("Email уже зарегистрирован");
-            respDto.setEmail(userDTO.getEmail());
-            return respDto;
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        // log.info("Поиск пользователя по email: {}", email);
+        //return userRepository.findByEmail(email);
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if (optionalUser.isPresent()) {
+            return optionalUser.get();
         }
+        log.info("Такой пользователь уже существует!!");
+        throw new UserNotFoundException("email: " + email);
+    }
 
-        try {
-            User user = User.builder()
-                    .name(userDTO.getName())
-                    .email(userDTO.getEmail())
-                    .age(userDTO.getAge())
-                    .build();
+     @Override
+     public Page<User> getAllUsers(Pageable pageable) {
+         log.info("Получение всех пользователей (страница: {}, размер: {})",
+                 pageable.getPageNumber(), pageable.getPageSize());
+         return userRepository.findAll(pageable); // Возвращаем Page<User>
+     }
 
-            User savedUser = userRepository.save(user);
-            log.info("Пользователь создан с ID: {}", savedUser.getId());
-            return ResponseDTO.fromEntity(savedUser);
-        } catch (Exception e) {
-            log.error("Ошибка создания пользователя: {}", e.getMessage());
-            ResponseDTO respDto = new ResponseDTO();
-            respDto.setError("Ошибка создания пользователя: "+e.getMessage());
-            respDto.setEmail(userDTO.getEmail());
-            return respDto;
-        }*/
+    @Override
+    public User getUserById(UUID id) {
+        //log.info("Поиск пользователя по ID: {}", id);
+        Optional<User> optionalUser = userRepository.findById(id);
+        if (optionalUser.isPresent()) {
+            return optionalUser.get();//userRepository.findById(id);
+        }
+        throw new UserNotFoundException("id: " + id);
     }
 
     @Override
-    public List<User> getAllUsers() {
-        log.info("Получение всех пользователей");
-        List<User> tmp = userRepository.findAll();
-        return tmp;
-    }
-
-    @Override
-    public Optional<User> getUserById(String id) {
-        log.info("Поиск пользователя по ID: {}", id);
-        return userRepository.findById(id);
-    }
-
-    @Override
-    public Optional<User> getUserByEmail(String email) {
-        log.info("Поиск пользователя по email: {}", email);
-        return userRepository.findByEmail(email);
-    }
-
-    @Override
-    public List<User> searchUsersByName(String name) {
+    public Page<User> searchUsersByName(String name, Pageable pageable) {
         log.info("Поиск пользователей по имени: {}", name);
-        return userRepository.findByNameContainingIgnoreCase(name);
+        return userRepository.findByNameContainingIgnoreCase(name, pageable);
     }
 
     @Override
-    public List<User> getUsersOlderThan(Integer age) {
+    public Page<User> getUsersOlderThan(Integer age, Pageable pageable) {
         log.info("Поиск пользователей старше: {}", age);
-        return userRepository.findByAgeGreaterThan(age);
+        return userRepository.findByAgeGreaterThan(age, pageable);
     }
 
     @Override
-    public boolean deleteUser(String id) {
-        log.info("Удаление пользователя: {}", id);
-        if (userRepository.existsById(id)) {
-            userRepository.deleteById(id);
-            log.info("Пользователь удален: {}", id);
-            return true;
-        }
-        log.warn("Пользователь не найден: {}", id);
-        return false;
+    public boolean deleteUser(UUID id) {
+        User user = getUserById(id);
+        userRepository.deleteById(id);
+        return true;
     }
 
     @Override

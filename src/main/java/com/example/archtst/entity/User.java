@@ -2,11 +2,18 @@ package com.example.archtst.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "users")
+// 1. Подменяем физическое удаление на обновление флага
+@SQLDelete(sql = "UPDATE users SET deleted = true WHERE id = ?")
+// 2. Скрываем удаленных пользователей из всех выборок (findAll, findById и т.д.)
+@SQLRestriction("deleted = false")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,7 +22,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private UUID id;
 
     @Column(nullable = false, length = 100)
     private String name;
@@ -30,6 +37,9 @@ public class User {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
 
     @PrePersist
     protected void onCreate() {
