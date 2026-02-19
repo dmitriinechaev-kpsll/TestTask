@@ -10,5 +10,5 @@ public final class Urls {
     public static final String BY_ID = "/{id}";
     public static final String SEARCH = "/search";
     public static final String STATS = "/stats";
-    public static final String HEALTH = "/health";
+    //public static final String HEALTH = "/health";
 }

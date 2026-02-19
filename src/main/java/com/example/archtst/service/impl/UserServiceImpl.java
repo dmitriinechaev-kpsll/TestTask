@@ -1,14 +1,17 @@
 package com.example.archtst.service.impl;
 
+import com.example.archtst.dto.UserSearchRequestDTO;
 import com.example.archtst.entity.User;
 import com.example.archtst.exception.UserAlreadyExistException;
 import com.example.archtst.exception.UserNotFoundException;
 import com.example.archtst.repository.UserRepository;
+import com.example.archtst.repository.specification.UserSpecification;
 import com.example.archtst.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
@@ -33,6 +36,30 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(newUser);
     }
 
+     @Override
+     public Page<User> getAllUsers(Pageable pageable) {
+         log.info("Получение всех пользователей (страница: {}, размер: {})",
+                 pageable.getPageNumber(), pageable.getPageSize());
+         return userRepository.findAll(pageable); // Возвращаем Page<User>
+     }
+
+    @Override
+    public Page<User> searchUsers(UserSearchRequestDTO request, Pageable pageable) {
+        Specification<User> spec = UserSpecification.byCriteria(request);
+        return userRepository.findAll(spec, pageable);
+    }
+
+    @Override
+    public User getUserById(UUID id) {
+        //log.info("Поиск пользователя по ID: {}", id);
+        Optional<User> optionalUser = userRepository.findById(id);
+        if (optionalUser.isPresent()) {
+            return optionalUser.get();//userRepository.findById(id);
+        }
+        throw new UserNotFoundException("id: " + id);
+    }
+
+    /*
     @Override
     public User getUserByEmail(String email) {
         // log.info("Поиск пользователя по email: {}", email);
@@ -45,23 +72,6 @@ public class UserServiceImpl implements UserService {
         throw new UserNotFoundException("email: " + email);
     }
 
-     @Override
-     public Page<User> getAllUsers(Pageable pageable) {
-         log.info("Получение всех пользователей (страница: {}, размер: {})",
-                 pageable.getPageNumber(), pageable.getPageSize());
-         return userRepository.findAll(pageable); // Возвращаем Page<User>
-     }
-
-    @Override
-    public User getUserById(UUID id) {
-        //log.info("Поиск пользователя по ID: {}", id);
-        Optional<User> optionalUser = userRepository.findById(id);
-        if (optionalUser.isPresent()) {
-            return optionalUser.get();//userRepository.findById(id);
-        }
-        throw new UserNotFoundException("id: " + id);
-    }
-
     @Override
     public Page<User> searchUsersByName(String name, Pageable pageable) {
         log.info("Поиск пользователей по имени: {}", name);
@@ -72,11 +82,11 @@ public class UserServiceImpl implements UserService {
     public Page<User> getUsersOlderThan(Integer age, Pageable pageable) {
         log.info("Поиск пользователей старше: {}", age);
         return userRepository.findByAgeGreaterThan(age, pageable);
-    }
+    }*/
 
     @Override
     public boolean deleteUser(UUID id) {
-        User user = getUserById(id);
+        getUserById(id);
         userRepository.deleteById(id);
         return true;
     }

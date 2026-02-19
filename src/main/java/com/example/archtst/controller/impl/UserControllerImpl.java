@@ -2,16 +2,20 @@ package com.example.archtst.controller.impl;
 
 import com.example.archtst.constant.Urls;
 import com.example.archtst.controller.UserController;
+import com.example.archtst.dto.UserSearchRequestDTO;
 import com.example.archtst.entity.User;
 import com.example.archtst.mapper.UserMapper;
 import com.example.archtst.dto.RequestDTO;
 import com.example.archtst.dto.ResponseDTO;
 import com.example.archtst.service.UserService;
+import com.example.archtst.repository.specification.UserSpecification;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,26 +38,6 @@ public class UserControllerImpl implements UserController {
         log.info("POST " + Urls.BASE_URL + " - Создание пользователя: {}", userDTO.getEmail());
         User savedUser = userService.createUser(userMapper.requestToEntity(userDTO));
         return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.userToResponseDTO(savedUser));
-        /*try{
-            User savedUser = userService.createUser(newUser);
-            ResponseDTO resp = userMapper.userToResponseDTO(savedUser);
-            return ResponseEntity.status(HttpStatus.CREATED).body(resp);
-        } catch (Exception e) {
-            log.error("Ошибка создания пользователя: {}", e.getMessage());
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Ошибка: " + e.getMessage() );
-            error.put("email", userDTO.getEmail());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
-        }*/
-        /*ResponseDTO createdUser = userService.createUser(userDTO);
-        if (createdUser.getError() != null) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", createdUser.getError());
-            error.put("email", userDTO.getEmail());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
-        }
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
-        // */
     }
 
     @GetMapping
@@ -79,7 +63,23 @@ public class UserControllerImpl implements UserController {
         userService.deleteUser(id);
     }
 
-    @GetMapping(Urls.SEARCH)
+    @PostMapping(Urls.SEARCH) // Например: "/api/users/search"
+    public ResponseEntity<Page<ResponseDTO>> searchUsers(
+            @RequestBody UserSearchRequestDTO request, // JSON с фильтрами
+            @PageableDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable // URL параметры
+    ) {
+        log.info("POST {} - Поиск пользователей. Фильтры: {}", Urls.SEARCH, request);
+        // 1. Вызываем сервис, передавая ему DTO с фильтрами и настройки страницы
+        Page<User> usersPage = userService.searchUsers(request, pageable);
+
+        // 2. Преобразуем Page<User> в Page<ResponseDTO>
+        // Используем метод .map(), который есть у объекта Page
+        Page<ResponseDTO> responsePage = usersPage.map(userMapper::userToResponseDTO);
+
+        return ResponseEntity.ok(responsePage);
+    }
+
+/*    @GetMapping(Urls.SEARCH)
     public ResponseEntity<?> searchUsers(
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String name,
@@ -107,7 +107,7 @@ public class UserControllerImpl implements UserController {
         }
 
         return ResponseEntity.badRequest().body("Укажите параметр поиска");
-    }
+    }*/
 
     @GetMapping(Urls.STATS)
     public ResponseEntity<Map<String, Object>> getStats() {
@@ -122,8 +122,8 @@ public class UserControllerImpl implements UserController {
         return ResponseEntity.ok(stats);
     }
 
-    @GetMapping(Urls.HEALTH)
+    /*@GetMapping(Urls.HEALTH)
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("API is working! PostgreSQL connected.");
-    }
+    }*/
 }
