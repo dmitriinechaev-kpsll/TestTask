@@ -69,6 +69,7 @@ public class UserControllerImpl implements UserController {
             @PageableDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable // URL параметры
     ) {
         log.info("POST {} - Поиск пользователей. Фильтры: {}", Urls.SEARCH, request);
+        //System.out.println("ПРИШЛИ ИМЕНА: " + request.getNames());
         // 1. Вызываем сервис, передавая ему DTO с фильтрами и настройки страницы
         Page<User> usersPage = userService.searchUsers(request, pageable);
 

@@ -143,6 +143,6 @@ class ArchtstApplicationTests {
         assertThat(isDeletedAgain).isFalse(); // Повторное удаление возвращает false
         assertThat(userRepository.findById(id)).isEmpty(); // В базе больше нет
         */
- */
+
     }
 }
