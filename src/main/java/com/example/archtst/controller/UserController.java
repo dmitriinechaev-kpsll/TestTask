@@ -23,8 +23,7 @@ public interface UserController {
 
     @PostMapping(Urls.SEARCH)
     public ResponseEntity<Page<ResponseDTO>> searchUsers(
-            @RequestBody UserSearchRequestDTO request, // JSON с фильтрами
-            @PageableDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable // URL параметры
+            @RequestBody UserSearchRequestDTO request
     );
 
     @GetMapping

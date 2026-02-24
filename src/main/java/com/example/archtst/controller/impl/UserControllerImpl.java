@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -65,50 +66,30 @@ public class UserControllerImpl implements UserController {
 
     @PostMapping(Urls.SEARCH) // Например: "/api/users/search"
     public ResponseEntity<Page<ResponseDTO>> searchUsers(
-            @RequestBody UserSearchRequestDTO request, // JSON с фильтрами
-            @PageableDefault(sort = "name", direction = Sort.Direction.ASC) Pageable pageable // URL параметры
+            @RequestBody UserSearchRequestDTO request
     ) {
         log.info("POST {} - Поиск пользователей. Фильтры: {}", Urls.SEARCH, request);
-        //System.out.println("ПРИШЛИ ИМЕНА: " + request.getNames());
-        // 1. Вызываем сервис, передавая ему DTO с фильтрами и настройки страницы
+
+        // 1. Определяем направление сортировки
+        Sort.Direction direction = request.getSortDir().equalsIgnoreCase("DESC")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+
+        // 2. Создаем объект Pageable на основе данных из DTO
+        Pageable pageable = PageRequest.of(
+                request.getPage(),
+                request.getSize(),
+                Sort.by(direction, request.getSortBy())
+        );
+
+        // 3. Вызываем сервис, передавая ему DTO с фильтрами и настройки страницы
         Page<User> usersPage = userService.searchUsers(request, pageable);
 
-        // 2. Преобразуем Page<User> в Page<ResponseDTO>
-        // Используем метод .map(), который есть у объекта Page
-        Page<ResponseDTO> responsePage = usersPage.map(userMapper::userToResponseDTO);
+        // 4. Преобразуем Page<User> в Page<ResponseDTO>
+        Page<ResponseDTO> responsePage = userMapper.pageToResponseDTO(usersPage);
 
         return ResponseEntity.ok(responsePage);
     }
-
-/*    @GetMapping(Urls.SEARCH)
-    public ResponseEntity<?> searchUsers(
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) Integer olderThan,
-            Pageable pageable) {
-
-        log.info("GET " + Urls.BASE_URL + Urls.SEARCH + " - Поиск: email={}, name={}, olderThan={}",
-                email, name, olderThan);
-
-        if (email != null) {
-            User user = userService.getUserByEmail(email);
-            return ResponseEntity.ok(userMapper.userToResponseDTO(user));
-        }
-
-        if (name != null) {
-            Page<User> usersPage = userService.searchUsersByName(name, pageable);
-            Page<ResponseDTO> responsePage = userMapper.pageToResponseDTO(usersPage);
-            return ResponseEntity.ok(responsePage);
-        }
-
-        if (olderThan != null) {
-            Page<User> usersPage = userService.getUsersOlderThan(olderThan, pageable);
-            Page<ResponseDTO> responsePage = userMapper.pageToResponseDTO(usersPage);
-            return ResponseEntity.ok(responsePage);
-        }
-
-        return ResponseEntity.badRequest().body("Укажите параметр поиска");
-    }*/
 
     @GetMapping(Urls.STATS)
     public ResponseEntity<Map<String, Object>> getStats() {

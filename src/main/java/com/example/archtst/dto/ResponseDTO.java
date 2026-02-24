@@ -18,6 +18,7 @@ public class ResponseDTO {
     private String name;
     private String email;
     private Integer age;
+    private Integer shoeSize;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

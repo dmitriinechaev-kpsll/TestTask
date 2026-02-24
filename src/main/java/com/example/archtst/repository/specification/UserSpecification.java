@@ -21,21 +21,35 @@ public class UserSpecification {
             List<Predicate> predicates = new ArrayList<>();
 
             // 1. Фильтр по Email (точное совпадение)
-            if (StringUtils.hasText(request.getEmail())) {
-                predicates.add(criteriaBuilder.equal(root.get("email"), request.getEmail()));
-            }
+            emailCondition(request, root, criteriaBuilder, predicates);
 
             // 2. Фильтр по Имени (частичное совпадение, без регистра)
             nameCondition(request, root, criteriaBuilder, predicates);
 
             // 3. Фильтр по Возрасту (старше чем)
-            if (request.getOlderThan() != null) {
-                predicates.add(criteriaBuilder.greaterThan(root.get("age"), request.getOlderThan()));
-            }
+            ageCondition(request, root, criteriaBuilder, predicates);
 
             // Собираем все предикаты через AND
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    private static void ageCondition(UserSearchRequestDTO request, Root<User> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
+        // 1. Проверка минимального возраста (от...)
+        if (request.getMinAge() != null) {
+            predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(User.Fields.age), request.getMinAge()));
+        }
+
+        // 2. Проверка максимального возраста (до...)
+        if (request.getMaxAge() != null) {
+            predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(User.Fields.age), request.getMaxAge()));
+        }
+    }
+
+    private static void emailCondition(UserSearchRequestDTO request, Root<User> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
+        if (StringUtils.hasText(request.getEmail())) {
+            predicates.add(criteriaBuilder.equal(root.get(User.Fields.email), request.getEmail()));
+        }
     }
 
     private static void nameCondition(UserSearchRequestDTO request, Root<User> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
@@ -44,9 +58,8 @@ public class UserSpecification {
             for (String name : request.getNames()) {
                 if (StringUtils.hasText(name)) {
                     namePredicates.add(criteriaBuilder.like(
-                            criteriaBuilder.lower(root.get("name")),
-                            "%" + name.toLowerCase() + "%"
-                    ));
+                            criteriaBuilder.lower(root.get(User.Fields.name)),
+                            "%" + name.toLowerCase() + "%"));
                 }
             }
 

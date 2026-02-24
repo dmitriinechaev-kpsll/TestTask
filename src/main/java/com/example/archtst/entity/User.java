@@ -2,6 +2,7 @@ package com.example.archtst.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.FieldNameConstants;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -13,11 +14,12 @@ import java.util.UUID;
 // 1. Подменяем физическое удаление на обновление флага
 @SQLDelete(sql = "UPDATE users SET deleted = true WHERE id = ?")
 // 2. Скрываем удаленных пользователей из всех выборок (findAll, findById и т.д.)
-@SQLRestriction("deleted = false")
+//@SQLRestriction("deleted = false")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@FieldNameConstants
 public class User {
 
     @Id
@@ -40,6 +42,9 @@ public class User {
 
     @Column(nullable = false)
     private boolean deleted = false;
+
+    @Column(name = "shoe_size")
+    private Integer shoeSize;
 
     @PrePersist
     protected void onCreate() {

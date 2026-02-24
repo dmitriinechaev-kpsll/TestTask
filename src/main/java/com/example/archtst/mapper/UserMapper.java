@@ -7,10 +7,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Component
 public class UserMapper {
 
@@ -25,17 +21,6 @@ public class UserMapper {
     public ResponseDTO userToResponseDTO(User user) {
         return modelMapper.map(user, ResponseDTO.class);
     }
-
-/*    // List<Entity> -> List<ResponseDTO>
-    public List<ResponseDTO> listToResponseDTO(List<User> users) {
-        if (users == null || users.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        return users.stream()
-                .map(this::userToResponseDTO)
-                .collect(Collectors.toList());
-    }*/
 
     // Page<Entity> -> Page<ResponseDTO>
     public Page<ResponseDTO> pageToResponseDTO(Page<User> usersPage) {
