@@ -7,7 +7,7 @@ import lombok.Data;
 public class RequestDTO {
 
     @NotBlank(message = "Имя обязательно")
-    @Size(min = 10, max = 100, message = "Имя должно быть от 10 до 100 символов")
+    @Size(min = 2, max = 100, message = "Имя должно быть от 2 до 100 символов")
     private String name;
 
     @NotBlank(message = "Email обязателен")
@@ -15,6 +15,8 @@ public class RequestDTO {
     @Size(max = 100, message = "Email не должен превышать 100 символов")
     private String email;
 
+    @Min(value = 10, message = "Размер не может быть меньше 10")
+    @Max(value = 60, message = "Размер не может быть больше 60")
     private Integer shoeSize;
 
     @Min(value = 0, message = "Возраст должен быть положительным")

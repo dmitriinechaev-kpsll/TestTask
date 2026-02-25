@@ -3,8 +3,10 @@ package com.example.archtst.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldNameConstants;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -14,7 +16,7 @@ import java.util.UUID;
 // 1. Подменяем физическое удаление на обновление флага
 @SQLDelete(sql = "UPDATE users SET deleted = true WHERE id = ?")
 // 2. Скрываем удаленных пользователей из всех выборок (findAll, findById и т.д.)
-//@SQLRestriction("deleted = false")
+@SQLRestriction("deleted = false")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,27 +28,30 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false, length = 100)
+    // @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(unique = true, nullable = false, length = 100)
+    // @Column(unique = true, nullable = false, length = 100)
     private String email;
 
     private Integer age;
 
-    @Column(name = "created_at", updatable = false)
+    //@Column(name = "created_at", updatable = false)
+    @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(nullable = false)
+    //@Column(nullable = false)
     private boolean deleted = false;
 
     @Column(name = "shoe_size")
     private Integer shoeSize;
 
-    @PrePersist
+  /*  @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
@@ -55,5 +60,5 @@ public class User {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
-    }
+    }*/
 }

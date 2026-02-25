@@ -7,8 +7,6 @@ import com.example.archtst.dto.UserSearchRequestDTO;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +20,7 @@ public interface UserController {
     ResponseEntity<?> createUser(@Valid @RequestBody RequestDTO userDTO);
 
     @PostMapping(Urls.SEARCH)
-    public ResponseEntity<Page<ResponseDTO>> searchUsers(
+    ResponseEntity<Page<ResponseDTO>> searchUsers(
             @RequestBody UserSearchRequestDTO request
     );
 
@@ -33,7 +31,7 @@ public interface UserController {
     ResponseEntity<?> getUserById(@PathVariable UUID id);
 
     @DeleteMapping(Urls.BY_ID)
-    public void deleteUser(@PathVariable UUID id);
+    void deleteUser(@PathVariable UUID id);
 
 /*    @GetMapping(Urls.SEARCH)
     public ResponseEntity<?> searchUsers(
