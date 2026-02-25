@@ -1,9 +1,13 @@
 package com.example.archtst.service.impl;
 
+import com.example.archtst.dto.AddressRequestDTO;
+import com.example.archtst.dto.AddressResponseDTO;
 import com.example.archtst.dto.UserSearchRequestDTO;
+import com.example.archtst.entity.Address;
 import com.example.archtst.entity.User;
 import com.example.archtst.exception.UserAlreadyExistException;
 import com.example.archtst.exception.UserNotFoundException;
+import com.example.archtst.repository.AddressRepository;
 import com.example.archtst.repository.UserRepository;
 import com.example.archtst.repository.specification.UserSpecification;
 import com.example.archtst.service.UserService;
@@ -24,6 +28,37 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final AddressRepository addressRepository;
+
+    @Transactional // Важно! Вся операция должна быть атомарной
+    public AddressResponseDTO addAddressToUser(UUID userId, AddressRequestDTO request) {
+        // 1. Ищем пользователя. Если нет - ошибка 404
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("id: " + userId));
+
+        // 2. Маппим DTO в Entity (в ручную или через MapStruct)
+        Address address = new Address();
+        address.setCity(request.city());
+        address.setStreet(request.street());
+        address.setHouseNumber(request.houseNumber());
+
+        // 3. Устанавливаем связь! (Самый важный момент)
+        // В БД в колонку user_id запишется ID нашего пользователя
+        address.setUser(user);
+
+        // 4. Сохраняем адрес
+        // (Можно сохранять и через user.getAddresses().add(address) + userRepo.save(user),
+        // но сохранять адрес напрямую эффективнее по памяти).
+        Address savedAddress = addressRepository.save(address);
+
+        // 5. Возвращаем ответ
+        return new AddressResponseDTO(
+                savedAddress.getId(),
+                savedAddress.getCity(),
+                savedAddress.getStreet(),
+                savedAddress.getHouseNumber()
+        );
+    }
 
     @Override
     public User createUser(User newUser) {

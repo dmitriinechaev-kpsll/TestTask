@@ -2,11 +2,9 @@ package com.example.archtst.controller.impl;
 
 import com.example.archtst.constant.Urls;
 import com.example.archtst.controller.UserController;
-import com.example.archtst.dto.UserSearchRequestDTO;
+import com.example.archtst.dto.*;
 import com.example.archtst.entity.User;
 import com.example.archtst.mapper.UserMapper;
-import com.example.archtst.dto.RequestDTO;
-import com.example.archtst.dto.ResponseDTO;
 import com.example.archtst.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +31,7 @@ public class UserControllerImpl implements UserController {
     private final UserMapper userMapper;
 
     @PostMapping
-    public ResponseEntity<?> createUser(@Valid @RequestBody RequestDTO userDTO) {
+    public ResponseEntity<ResponseDTO> createUser(@Valid @RequestBody RequestDTO userDTO) {
         log.info("POST " + Urls.BASE_URL + " - Создание пользователя: {}", userDTO.getEmail());
         User savedUser = userService.createUser(userMapper.requestToEntity(userDTO));
         return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.userToResponseDTO(savedUser));
@@ -41,7 +39,7 @@ public class UserControllerImpl implements UserController {
 
     @GetMapping
     public ResponseEntity<Page<ResponseDTO>> getAllUsers(
-            @PageableDefault(size = 20, page = 0) Pageable pageable) {
+            @PageableDefault(size = 20) Pageable pageable) {
         // log.info("GET " + Urls.BASE_URL + " - Получение всех пользователей с пагинацией");
         Page<User> usersPage = userService.getAllUsers(pageable);
         Page<ResponseDTO> responsePage = userMapper.pageToResponseDTO(usersPage);
@@ -57,9 +55,10 @@ public class UserControllerImpl implements UserController {
 
     @DeleteMapping(Urls.BY_ID)
     @ResponseStatus(HttpStatus.NO_CONTENT) // Явно возвращаем 204
-    public void deleteUser(@PathVariable UUID id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         log.info("DELETE " + Urls.BASE_URL + "{} - Удаление пользователя", id);
         userService.deleteUser(id);
+        return ResponseEntity.noContent().build(); // Возвращает 204
     }
 
     @PostMapping(Urls.SEARCH) // Например: "/api/users/search"
@@ -106,4 +105,18 @@ public class UserControllerImpl implements UserController {
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("API is working! PostgreSQL connected.");
     }*/
+
+    // Добавление адреса пользователю
+    @PostMapping(Urls.ADDRESSES) // /users/{id}/addresses
+    public ResponseEntity<AddressResponseDTO> addAddress(
+            @PathVariable UUID id,
+            @Valid @RequestBody AddressRequestDTO request)
+    {
+        AddressResponseDTO response = userService.addAddressToUser(id, request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED) // Возвращаем 201 Created
+                .body(response);
+    }
+
 }

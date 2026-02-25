@@ -9,6 +9,8 @@ import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -51,14 +53,28 @@ public class User {
     @Column(name = "shoe_size")
     private Integer shoeSize;
 
-  /*  @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+    // --- НОВАЯ СВЯЗЬ ---
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToMany(
+            mappedBy = "user", // Ссылаемся на поле "user" в классе Address
+            cascade = CascadeType.ALL, // Если сохраняем Юзера, сохраняются и адреса
+            orphanRemoval = true // Если удалить адрес из списка, он удалится из базы
+    )
+
+    // Инициализируем пустым списком, чтобы не ловить NullPointerException
+    private List<Address> addresses = new ArrayList<>();
+
+    // ... методы helper'ы (опционально) ...
+
+    public void addAddress(Address address) {
+        addresses.add(address);
+        address.setUser(this);
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }*/
+    public void removeAddress(Address address) {
+        addresses.remove(address);
+        address.setUser(null);
+    }
+
 }

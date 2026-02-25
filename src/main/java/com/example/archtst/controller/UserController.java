@@ -1,9 +1,7 @@
 package com.example.archtst.controller;
 
 import com.example.archtst.constant.Urls;
-import com.example.archtst.dto.RequestDTO;
-import com.example.archtst.dto.ResponseDTO;
-import com.example.archtst.dto.UserSearchRequestDTO;
+import com.example.archtst.dto.*;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +15,7 @@ import java.util.UUID;
 public interface UserController {
 
     @PostMapping
-    ResponseEntity<?> createUser(@Valid @RequestBody RequestDTO userDTO);
+    ResponseEntity<ResponseDTO> createUser(@Valid @RequestBody RequestDTO userDTO);
 
     @PostMapping(Urls.SEARCH)
     ResponseEntity<Page<ResponseDTO>> searchUsers(
@@ -31,7 +29,7 @@ public interface UserController {
     ResponseEntity<?> getUserById(@PathVariable UUID id);
 
     @DeleteMapping(Urls.BY_ID)
-    void deleteUser(@PathVariable UUID id);
+    ResponseEntity<Void> deleteUser(@PathVariable UUID id);
 
 /*    @GetMapping(Urls.SEARCH)
     public ResponseEntity<?> searchUsers(
@@ -42,6 +40,12 @@ public interface UserController {
 
     @GetMapping(Urls.STATS)
     ResponseEntity<Map<String, Object>> getStats();
+
+    // Добавление адреса пользователю
+    @PostMapping(Urls.ADDRESSES) // /users/{id}/addresses
+    ResponseEntity<AddressResponseDTO> addAddress(
+            @PathVariable UUID id,
+            @Valid @RequestBody AddressRequestDTO request);
 
     //@GetMapping(Urls.HEALTH)
     //public ResponseEntity<String> healthCheck();
