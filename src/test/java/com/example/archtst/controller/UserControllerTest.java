@@ -1,7 +1,7 @@
 package com.example.archtst.controller;
 
 import com.example.archtst.AbstractIntegrationTest;
-import com.example.archtst.dto.RequestDTO;
+import com.example.archtst.dto.UserRequestDTO;
 import com.example.archtst.dto.UserSearchRequestDTO;
 import com.example.archtst.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,7 +39,7 @@ class UserControllerTest extends AbstractIntegrationTest {
     @Test
     void shouldCreateAndFindUser() throws Exception {
         // --- 1. Подготовка данных (Given) ---
-        RequestDTO newUser = new RequestDTO();
+        UserRequestDTO newUser = new UserRequestDTO();
         newUser.setName("Василий Тестовый");
         newUser.setEmail("vasya_test@example.com");
         newUser.setAge(25);
@@ -72,7 +72,7 @@ class UserControllerTest extends AbstractIntegrationTest {
     @Test
     void shouldFailValidation() throws Exception {
         // Проверяем, что валидация работает
-        RequestDTO badUser = new RequestDTO();
+        UserRequestDTO badUser = new UserRequestDTO();
         badUser.setName(""); // Пустое имя!
 
         mockMvc.perform(post("/api/users")

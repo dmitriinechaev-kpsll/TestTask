@@ -4,6 +4,7 @@ import com.example.archtst.dto.*;
 import com.example.archtst.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,4 +20,5 @@ public interface UserService {
     Page<User> searchUsers(UserSearchRequestDTO request, Pageable pageable);
     boolean deleteUser(UUID id);
     long getTotalUsersCount();
- }
+    UserResponseDTO addRoleToUser(UUID userId, RoleRequestDTO request);
+}

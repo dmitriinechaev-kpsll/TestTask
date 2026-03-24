@@ -31,18 +31,18 @@ public class UserControllerImpl implements UserController {
     private final UserMapper userMapper;
 
     @PostMapping
-    public ResponseEntity<ResponseDTO> createUser(@Valid @RequestBody RequestDTO userDTO) {
+    public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserRequestDTO userDTO) {
         log.info("POST " + Urls.BASE_URL + " - Создание пользователя: {}", userDTO.getEmail());
         User savedUser = userService.createUser(userMapper.requestToEntity(userDTO));
         return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.userToResponseDTO(savedUser));
     }
 
     @GetMapping
-    public ResponseEntity<Page<ResponseDTO>> getAllUsers(
+    public ResponseEntity<Page<UserResponseDTO>> getAllUsers(
             @PageableDefault(size = 20) Pageable pageable) {
         // log.info("GET " + Urls.BASE_URL + " - Получение всех пользователей с пагинацией");
         Page<User> usersPage = userService.getAllUsers(pageable);
-        Page<ResponseDTO> responsePage = userMapper.pageToResponseDTO(usersPage);
+        Page<UserResponseDTO> responsePage = userMapper.pageToResponseDTO(usersPage);
         return ResponseEntity.ok(responsePage);
     }
 
@@ -62,7 +62,7 @@ public class UserControllerImpl implements UserController {
     }
 
     @PostMapping(Urls.SEARCH) // Например: "/api/users/search"
-    public ResponseEntity<Page<ResponseDTO>> searchUsers(
+    public ResponseEntity<Page<UserResponseDTO>> searchUsers(
             @RequestBody UserSearchRequestDTO request
     ) {
         log.info("POST {} - Поиск пользователей. Фильтры: {}", Urls.SEARCH, request);
@@ -83,7 +83,7 @@ public class UserControllerImpl implements UserController {
         Page<User> usersPage = userService.searchUsers(request, pageable);
 
         // 4. Преобразуем Page<User> в Page<ResponseDTO>
-        Page<ResponseDTO> responsePage = userMapper.pageToResponseDTO(usersPage);
+        Page<UserResponseDTO> responsePage = userMapper.pageToResponseDTO(usersPage);
 
         return ResponseEntity.ok(responsePage);
     }
@@ -117,8 +117,18 @@ public class UserControllerImpl implements UserController {
             // Если обновили -> 200 OK
             return ResponseEntity.ok(result.address());
         }
+    }
 
+    @Override
+    public ResponseEntity<UserResponseDTO> addRole(
+            @PathVariable UUID id,
+            @Valid @RequestBody RoleRequestDTO request
+    ) {
+        // Вызываем наш исправленный метод сервиса
+        UserResponseDTO response = userService.addRoleToUser(id, request);
 
+        // Возвращаем статус 200 OK и обновленного юзера в теле ответа
+        return ResponseEntity.ok(response);
     }
 
 }

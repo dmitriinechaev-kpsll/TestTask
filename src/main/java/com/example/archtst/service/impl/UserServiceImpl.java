@@ -1,16 +1,16 @@
 package com.example.archtst.service.impl;
 
-import com.example.archtst.dto.AddressRequestDTO;
-import com.example.archtst.dto.AddressResponseDTO;
-import com.example.archtst.dto.AddressUpsertResult;
-import com.example.archtst.dto.UserSearchRequestDTO;
+import com.example.archtst.dto.*;
 import com.example.archtst.entity.Address;
+import com.example.archtst.entity.Role;
 import com.example.archtst.entity.User;
 import com.example.archtst.enums.AddressType;
 import com.example.archtst.exception.UserAlreadyExistException;
 import com.example.archtst.exception.UserNotFoundException;
 import com.example.archtst.mapper.AddressMapper;
+import com.example.archtst.mapper.UserMapper;
 import com.example.archtst.repository.AddressRepository;
+import com.example.archtst.repository.RoleRepository;
 import com.example.archtst.repository.UserRepository;
 import com.example.archtst.repository.specification.UserSpecification;
 import com.example.archtst.service.UserService;
@@ -33,6 +33,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
     private final AddressMapper addressMapper;
+    private final UserMapper userMapper;
+    private final RoleRepository roleRepository;
 
     @Override
     public User createUser(User newUser) {
@@ -144,5 +146,28 @@ public class UserServiceImpl implements UserService {
         Address savedAddress = addressRepository.save(address);
         return addressMapper.toResponseDTO(savedAddress);
  */
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDTO addRoleToUser(UUID userId, RoleRequestDTO request) {
+        // 1. Ищем пользователя
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден, id: " + userId));
+
+        // 2. Ищем роль в базе. (УБРАЛИ локальную переменную RoleRepository)
+        // Теперь используем тот roleRepository, который внедрил Spring!
+        Role role = roleRepository.findByName(request.roleName())
+                .orElseThrow(() -> new IllegalArgumentException("Роль " + request.roleName() + " не существует в системе"));
+
+        // 3. Назначаем роль пользователю
+        user.addRole(role);
+
+        // 4. Сохраняем
+        User savedUser = userRepository.save(user);
+
+        // 5. Возвращаем обновленного пользователя
+        // 👇 ИСПРАВИЛИ U на u (используем внедренный объект userMapper)
+        return userMapper.userToResponseDTO(savedUser);
     }
 }
