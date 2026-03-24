@@ -31,13 +31,6 @@ public interface UserController {
     @DeleteMapping(Urls.BY_ID)
     ResponseEntity<Void> deleteUser(@PathVariable UUID id);
 
-/*    @GetMapping(Urls.SEARCH)
-    public ResponseEntity<?> searchUsers(
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) Integer olderThan,
-            Pageable pageable);*/
-
     @GetMapping(Urls.STATS)
     ResponseEntity<Map<String, Object>> getStats();
 
@@ -47,6 +40,4 @@ public interface UserController {
             @PathVariable UUID id,
             @Valid @RequestBody AddressRequestDTO request);
 
-    //@GetMapping(Urls.HEALTH)
-    //public ResponseEntity<String> healthCheck();
 }

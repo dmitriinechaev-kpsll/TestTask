@@ -1,14 +1,23 @@
 package com.example.archtst.dto;
 
+import com.example.archtst.enums.AddressType;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record AddressRequestDTO(
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class AddressRequestDTO{
         @NotBlank(message = "Город не может быть пустым")
-        String city,
+        String city;
 
         @NotBlank(message = "Улица не может быть пустой")
-        String street,
+        String street;
 
         @NotBlank(message = "Номер дома обязателен")
-        String houseNumber
-) {}
+        String houseNumber;
+
+        private AddressType type = AddressType.HOME;
+}

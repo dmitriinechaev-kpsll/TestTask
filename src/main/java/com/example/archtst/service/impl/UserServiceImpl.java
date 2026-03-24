@@ -2,11 +2,14 @@ package com.example.archtst.service.impl;
 
 import com.example.archtst.dto.AddressRequestDTO;
 import com.example.archtst.dto.AddressResponseDTO;
+import com.example.archtst.dto.AddressUpsertResult;
 import com.example.archtst.dto.UserSearchRequestDTO;
 import com.example.archtst.entity.Address;
 import com.example.archtst.entity.User;
+import com.example.archtst.enums.AddressType;
 import com.example.archtst.exception.UserAlreadyExistException;
 import com.example.archtst.exception.UserNotFoundException;
+import com.example.archtst.mapper.AddressMapper;
 import com.example.archtst.repository.AddressRepository;
 import com.example.archtst.repository.UserRepository;
 import com.example.archtst.repository.specification.UserSpecification;
@@ -29,36 +32,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
-
-    @Transactional // Важно! Вся операция должна быть атомарной
-    public AddressResponseDTO addAddressToUser(UUID userId, AddressRequestDTO request) {
-        // 1. Ищем пользователя. Если нет - ошибка 404
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("id: " + userId));
-
-        // 2. Маппим DTO в Entity (в ручную или через MapStruct)
-        Address address = new Address();
-        address.setCity(request.city());
-        address.setStreet(request.street());
-        address.setHouseNumber(request.houseNumber());
-
-        // 3. Устанавливаем связь! (Самый важный момент)
-        // В БД в колонку user_id запишется ID нашего пользователя
-        address.setUser(user);
-
-        // 4. Сохраняем адрес
-        // (Можно сохранять и через user.getAddresses().add(address) + userRepo.save(user),
-        // но сохранять адрес напрямую эффективнее по памяти).
-        Address savedAddress = addressRepository.save(address);
-
-        // 5. Возвращаем ответ
-        return new AddressResponseDTO(
-                savedAddress.getId(),
-                savedAddress.getCity(),
-                savedAddress.getStreet(),
-                savedAddress.getHouseNumber()
-        );
-    }
+    private final AddressMapper addressMapper;
 
     @Override
     public User createUser(User newUser) {
@@ -94,31 +68,6 @@ public class UserServiceImpl implements UserService {
         throw new UserNotFoundException("id: " + id);
     }
 
-    /*
-    @Override
-    public User getUserByEmail(String email) {
-        // log.info("Поиск пользователя по email: {}", email);
-        //return userRepository.findByEmail(email);
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-        if (optionalUser.isPresent()) {
-            return optionalUser.get();
-        }
-        log.info("Такой пользователь уже существует!!");
-        throw new UserNotFoundException("email: " + email);
-    }
-
-    @Override
-    public Page<User> searchUsersByName(String name, Pageable pageable) {
-        log.info("Поиск пользователей по имени: {}", name);
-        return userRepository.findByNameContainingIgnoreCase(name, pageable);
-    }
-
-    @Override
-    public Page<User> getUsersOlderThan(Integer age, Pageable pageable) {
-        log.info("Поиск пользователей старше: {}", age);
-        return userRepository.findByAgeGreaterThan(age, pageable);
-    }*/
-
     @Override
     public boolean deleteUser(UUID id) {
         getUserById(id);
@@ -129,5 +78,71 @@ public class UserServiceImpl implements UserService {
     @Override
     public long getTotalUsersCount() {
         return userRepository.count();
+    }
+
+    @Override
+    @Transactional // Важно! Вся операция должна быть атомарной
+    public AddressUpsertResult addAddressToUser(UUID userId, AddressRequestDTO request) {
+        // 1. Ищем пользователя. Если нет - ошибка 404
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("id: " + userId));
+
+        Address addressToSave = null;
+        boolean isCreated = false; // Флаг для контроллера
+
+        // 2. Если добавляют HOME адрес, ищем, нет ли уже такого у юзера
+        if (request.getType() == AddressType.HOME) {
+            addressToSave = user.getAddresses().stream()
+                    .filter(addr -> addr.getType() == AddressType.HOME)
+                    .findFirst()
+                    .orElse(null); // Вернет null, если адреса еще нет
+        }
+
+        // 3. Выбираем стратегию: ОБНОВЛЕНИЕ или СОЗДАНИЕ
+        if (addressToSave != null) {
+            // ОБНОВЛЕНИЕ (Перезаписываем поля существующего адреса)
+            // Мы не трогаем addressToSave.getId() и addressToSave.getUser() - они остаются прежними
+            addressToSave.setCity(request.getCity());
+            addressToSave.setStreet(request.getStreet());
+            addressToSave.setHouseNumber(request.getHouseNumber());
+            isCreated = false; // Явно указываем, что это обновление
+            // *Если в будущем добавишь другие типы (WORK),
+            // type тут менять не надо, он и так HOME
+        } else {
+            // СОЗДАНИЕ (Маппим новый адрес из DTO)
+            addressToSave = addressMapper.toEntity(request);
+            addressToSave.setUser(user);
+            isCreated = true; // Запоминаем, что создали новый!
+        }
+
+        // 4. Сохраняем.
+        // Если у addressToSave есть ID (обновление) - он сделает SQL UPDATE.
+        // Если ID нет (создание) - он сделает SQL INSERT.
+        Address savedAddress = addressRepository.save(addressToSave);
+        AddressResponseDTO responseDTO = addressMapper.toResponseDTO(savedAddress);
+
+        // 5. Возвращаем ответ
+        return new AddressUpsertResult(responseDTO, isCreated);
+/*
+        // Проверка уникальности домашнего адреса
+        if (request.getType() == AddressType.HOME){
+            // если домашний адрес уже есть
+            boolean hasHomeAddress = user.getAddresses().stream()
+                    .anyMatch(address -> address.getType().equals(AddressType.HOME));
+            if (hasHomeAddress){
+                throw new UserAlreadyExistException("email: " + user.getEmail());
+            }
+        }
+
+        // DTO в Entity
+        Address address = addressMapper.toEntity(request);
+
+        // В БД в колонку user_id запишется ID пользователя
+        address.setUser(user);
+
+        // Сохраняем адрес
+        Address savedAddress = addressRepository.save(address);
+        return addressMapper.toResponseDTO(savedAddress);
+ */
     }
 }

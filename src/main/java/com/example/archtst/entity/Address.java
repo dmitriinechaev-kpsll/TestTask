@@ -1,5 +1,6 @@
 package com.example.archtst.entity;
 
+import com.example.archtst.enums.AddressType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -39,4 +40,8 @@ public class Address {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "address_type", nullable = false)
+    private AddressType type;
 }

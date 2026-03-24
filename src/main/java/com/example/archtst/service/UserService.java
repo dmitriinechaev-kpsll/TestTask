@@ -11,14 +11,11 @@ import java.util.UUID;
 
 public interface UserService {
 
-    AddressResponseDTO addAddressToUser(UUID userId, AddressRequestDTO request);
+    AddressUpsertResult addAddressToUser(UUID userId, AddressRequestDTO request);
 
     User createUser(User newUser);
     Page<User> getAllUsers(Pageable pageable);
     User getUserById(UUID id);
-//    User getUserByEmail(String email);
-//    Page<User> searchUsersByName(String name, Pageable pageable);
-//    Page<User> getUsersOlderThan(Integer age, Pageable pageable);
     Page<User> searchUsers(UserSearchRequestDTO request, Pageable pageable);
     boolean deleteUser(UUID id);
     long getTotalUsersCount();

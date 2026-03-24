@@ -101,22 +101,24 @@ public class UserControllerImpl implements UserController {
         return ResponseEntity.ok(stats);
     }
 
-    /*@GetMapping(Urls.HEALTH)
-    public ResponseEntity<String> healthCheck() {
-        return ResponseEntity.ok("API is working! PostgreSQL connected.");
-    }*/
-
     // Добавление адреса пользователю
     @PostMapping(Urls.ADDRESSES) // /users/{id}/addresses
     public ResponseEntity<AddressResponseDTO> addAddress(
             @PathVariable UUID id,
             @Valid @RequestBody AddressRequestDTO request)
     {
-        AddressResponseDTO response = userService.addAddressToUser(id, request);
+        //AddressResponseDTO response = userService.addAddressToUser(id, request);
+        AddressUpsertResult  result = userService.addAddressToUser(id, request);
+        if (result.isCreated()){
+            return ResponseEntity
+                    .status(HttpStatus.CREATED) // Возвращаем 201 Created
+                    .body(result.address());
+        }else {
+            // Если обновили -> 200 OK
+            return ResponseEntity.ok(result.address());
+        }
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED) // Возвращаем 201 Created
-                .body(response);
+
     }
 
 }

@@ -9,9 +9,7 @@ import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "users")
@@ -77,4 +75,23 @@ public class User {
         address.setUser(null);
     }
 
+    // 🔥 НОВАЯ СВЯЗЬ: Многие ко Многим
+    @ManyToMany(fetch = FetchType.EAGER) // Или LAZY, зависит от архитектуры
+    @JoinTable(
+            name = "user_roles", // Имя промежуточной таблицы в БД
+            joinColumns = @JoinColumn(name = "user_id"), // Колонка, которая смотрит на этот класс (User)
+            inverseJoinColumns = @JoinColumn(name = "role_id") // Колонка, которая смотрит на другой класс (Role)
+    )
+    // ⚠️ В ManyToMany лучше использовать Set (Множество), а не List,
+    // чтобы Hibernate работал эффективнее и не допускал дубликатов.
+    private Set<Role> roles = new HashSet<>();
+
+    // Вспомогательные методы
+    public void addRole(Role role) {
+        this.roles.add(role);
+    }
+
+    public void removeRole(Role role) {
+        this.roles.remove(role);
+    }
 }
