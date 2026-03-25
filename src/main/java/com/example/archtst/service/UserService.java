@@ -21,4 +21,5 @@ public interface UserService {
     boolean deleteUser(UUID id);
     long getTotalUsersCount();
     UserResponseDTO addRoleToUser(UUID userId, RoleRequestDTO request);
+    UserResponseDTO removeRoleFromUser(UUID userId, String roleName);
 }

@@ -21,7 +21,7 @@ public class UserMapper {
         this.modelMapper = modelMapper;
     }
 
-    // Entity -> ResponseDTO
+    // Entity -> UserResponseDTO
     public UserResponseDTO userToResponseDTO(User user) {
         UserResponseDTO dto = modelMapper.map(user, UserResponseDTO.class);
         if (user.getRoles() != null) {

@@ -1,6 +1,7 @@
 package com.example.archtst.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -57,5 +58,25 @@ public class GlobalExceptionHandler {
         response.put("errors", errors); // Вставляем наш список ошибок
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(PropertyReferenceException.class)
+    public ResponseEntity<ApiError> handlePropertyReferenceException(PropertyReferenceException ex) {
+
+        // Формируем понятное сообщение.
+        // ex.getPropertyName() вернет то самое кривое слово, например "string" или "abracadabra"
+        String errorMessage = "Неверное поле для сортировки. Поле '" + ex.getPropertyName() + "' не найдено.";
+
+        // Создаем твой объект ошибки (передаем статус 400, сообщение и текущее время)
+        ApiError apiError = new ApiError(
+                HttpStatus.BAD_REQUEST.value(),
+                errorMessage,
+                LocalDateTime.now()
+        );
+
+        // Возвращаем красивый JSON со статусом 400 Bad Request
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(apiError);
     }
 }

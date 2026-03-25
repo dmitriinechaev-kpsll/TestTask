@@ -75,14 +75,14 @@ public class User {
         address.setUser(null);
     }
 
-    // 🔥 НОВАЯ СВЯЗЬ: Многие ко Многим
+    // НОВАЯ СВЯЗЬ: Многие ко Многим
     @ManyToMany(fetch = FetchType.EAGER) // Или LAZY, зависит от архитектуры
     @JoinTable(
             name = "user_roles", // Имя промежуточной таблицы в БД
             joinColumns = @JoinColumn(name = "user_id"), // Колонка, которая смотрит на этот класс (User)
             inverseJoinColumns = @JoinColumn(name = "role_id") // Колонка, которая смотрит на другой класс (Role)
     )
-    // ⚠️ В ManyToMany лучше использовать Set (Множество), а не List,
+    // В ManyToMany лучше использовать Set (Множество), а не List,
     // чтобы Hibernate работал эффективнее и не допускал дубликатов.
     private Set<Role> roles = new HashSet<>();
 

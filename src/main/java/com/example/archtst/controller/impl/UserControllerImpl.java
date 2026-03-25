@@ -63,7 +63,7 @@ public class UserControllerImpl implements UserController {
 
     @PostMapping(Urls.SEARCH) // Например: "/api/users/search"
     public ResponseEntity<Page<UserResponseDTO>> searchUsers(
-            @RequestBody UserSearchRequestDTO request
+            @Valid @RequestBody UserSearchRequestDTO request
     ) {
         log.info("POST {} - Поиск пользователей. Фильтры: {}", Urls.SEARCH, request);
 
@@ -131,4 +131,9 @@ public class UserControllerImpl implements UserController {
         return ResponseEntity.ok(response);
     }
 
+    @Override
+    public ResponseEntity<UserResponseDTO> removeRole(UUID id, String roleName) {
+        UserResponseDTO response = userService.removeRoleFromUser(id, roleName);
+        return ResponseEntity.ok(response);
+    }
 }

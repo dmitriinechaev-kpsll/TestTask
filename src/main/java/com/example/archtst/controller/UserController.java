@@ -17,9 +17,11 @@ import java.util.UUID;
 @RequestMapping(Urls.BASE_URL)
 public interface UserController {
 
+    @Operation(summary = "Создать пользователя")
     @PostMapping
     ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserRequestDTO userDTO);
 
+    @Operation(summary = "Поиск пользователей")
     @PostMapping(Urls.SEARCH)
     ResponseEntity<Page<UserResponseDTO>> searchUsers(
             @RequestBody UserSearchRequestDTO request
@@ -53,6 +55,18 @@ public interface UserController {
     ResponseEntity<UserResponseDTO> addRole(
             @PathVariable UUID id,
             @Valid @RequestBody RoleRequestDTO request
+    );
+
+    @Operation(summary = "Забрать роль у пользователя")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Роль успешно удалена"),
+            @ApiResponse(responseCode = "404", description = "Пользователь не найден"),
+            @ApiResponse(responseCode = "400", description = "Роль не существует в БД")
+    })
+    @DeleteMapping(Urls.ROLES + "/{roleName}")
+    ResponseEntity<UserResponseDTO> removeRole(
+            @PathVariable UUID id,
+            @PathVariable String roleName
     );
 
 }

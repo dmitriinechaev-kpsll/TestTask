@@ -72,8 +72,18 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean deleteUser(UUID id) {
-        getUserById(id);
-        userRepository.deleteById(id);
+        // 1. Достаем пользователя (метод уже кидает ошибку, если его нет)
+        User user = getUserById(id);
+
+        // 2. Очищаем все роли!
+        // Hibernate увидит это и сделает настоящий DELETE FROM user_roles WHERE user_id = ?
+        user.getRoles().clear();
+
+        // 3. Вызываем "удаление" юзера
+        // Hibernate сделает UPDATE users SET deleted = true WHERE id = ?
+        userRepository.delete(user);
+
+        log.info("Пользователь {} и его связи с ролями успешно удалены", user.getEmail());
         return true;
     }
 
@@ -155,8 +165,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Пользователь не найден, id: " + userId));
 
-        // 2. Ищем роль в базе. (УБРАЛИ локальную переменную RoleRepository)
-        // Теперь используем тот roleRepository, который внедрил Spring!
+        // 2. Ищем роль в базе.
         Role role = roleRepository.findByName(request.roleName())
                 .orElseThrow(() -> new IllegalArgumentException("Роль " + request.roleName() + " не существует в системе"));
 
@@ -168,6 +177,28 @@ public class UserServiceImpl implements UserService {
 
         // 5. Возвращаем обновленного пользователя
         // 👇 ИСПРАВИЛИ U на u (используем внедренный объект userMapper)
+        return userMapper.userToResponseDTO(savedUser);
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDTO removeRoleFromUser(UUID userId, String roleName) {
+        // 1. Ищем пользователя
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден, id: " + userId));
+
+        // 2. Ищем роль
+        Role role = roleRepository.findByName(roleName)
+                .orElseThrow(() -> new IllegalArgumentException("Роль " + roleName + " не существует в системе"));
+
+        // 3. Забираем роль (тот самый метод!)
+        // Метод remove() внутри Set корректно найдет нужную роль и удалит её.
+        user.removeRole(role);
+
+        // 4. Сохраняем (Hibernate сделает DELETE FROM user_roles WHERE ...)
+        User savedUser = userRepository.save(user);
+
+        // 5. Возвращаем обновленного юзера (чтобы фронтенд сразу увидел, что список ролей изменился)
         return userMapper.userToResponseDTO(savedUser);
     }
 }
