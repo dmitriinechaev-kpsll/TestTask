@@ -47,7 +47,7 @@ public class UserControllerImpl implements UserController {
     }
 
     @GetMapping(Urls.BY_ID)
-    public ResponseEntity<?> getUserById(@PathVariable UUID id) {
+    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable UUID id) {
         // log.info("GET " + Urls.BASE_URL + "{} - Поиск пользователя", id);
         User user = userService.getUserById(id);
         return ResponseEntity.ok(userMapper.userToResponseDTO(user));
@@ -88,7 +88,7 @@ public class UserControllerImpl implements UserController {
         return ResponseEntity.ok(responsePage);
     }
 
-    @GetMapping(Urls.STATS)
+/*    @GetMapping(Urls.STATS)
     public ResponseEntity<Map<String, Object>> getStats() {
         log.info("GET " + Urls.BASE_URL + Urls.STATS + " - Статистика");
 
@@ -99,7 +99,7 @@ public class UserControllerImpl implements UserController {
         stats.put("appName", "Archtst API");
 
         return ResponseEntity.ok(stats);
-    }
+    }*/
 
     // Добавление адреса пользователю
     @PostMapping(Urls.ADDRESSES) // /users/{id}/addresses
@@ -117,6 +117,18 @@ public class UserControllerImpl implements UserController {
             // Если обновили -> 200 OK
             return ResponseEntity.ok(result.address());
         }
+    }
+
+    @Override
+    public ResponseEntity<Page<AddressResponseDTO>> getUserAddresses(UUID id, Pageable pageable) {
+        Page<AddressResponseDTO> addresses = userService.getUserAddresses(id, pageable);
+        return ResponseEntity.ok(addresses);
+    }
+
+    @Override
+    public ResponseEntity<Void> removeAddress(UUID id, UUID addressId) {
+        userService.removeAddress(id, addressId);
+        return ResponseEntity.noContent().build(); // Возвращает статус 204
     }
 
     @Override

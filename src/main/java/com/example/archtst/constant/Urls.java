@@ -4,7 +4,7 @@ public final class Urls {
     private Urls() {}
 
     // Базовый путь (если захотите перенести его из интерфейса или использовать в логах/тестах)
-    public static final String BASE_URL = "/api/users";
+    public static final String BASE_URL = "/api/v1/users";
 
     // Пути методов
     public static final String BY_ID = "/{id}";

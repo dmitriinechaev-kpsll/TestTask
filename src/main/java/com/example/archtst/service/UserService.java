@@ -13,6 +13,8 @@ import java.util.UUID;
 public interface UserService {
 
     AddressUpsertResult addAddressToUser(UUID userId, AddressRequestDTO request);
+    Page<AddressResponseDTO> getUserAddresses(UUID userId, Pageable pageable);
+    void removeAddress(UUID userId, UUID addressId);
 
     User createUser(User newUser);
     Page<User> getAllUsers(Pageable pageable);

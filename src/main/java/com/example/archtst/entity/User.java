@@ -59,8 +59,6 @@ public class User {
             cascade = CascadeType.ALL, // Если сохраняем Юзера, сохраняются и адреса
             orphanRemoval = true // Если удалить адрес из списка, он удалится из базы
     )
-
-    // Инициализируем пустым списком, чтобы не ловить NullPointerException
     private List<Address> addresses = new ArrayList<>();
 
     // ... методы helper'ы (опционально) ...

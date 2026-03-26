@@ -1,9 +1,12 @@
 package com.example.archtst.exception;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -77,6 +80,46 @@ public class GlobalExceptionHandler {
         // Возвращаем красивый JSON со статусом 400 Bad Request
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .body(apiError);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+
+        // Базовое сообщение, если мы просто отправили кривой JSON (например, забыли закрыть скобку)
+        String errorMessage = "Некорректный формат JSON или переданы неверные типы данных.";
+
+        // Пытаемся вытащить конкретную причину (например, ошибку Enum)
+        Throwable cause = ex.getMostSpecificCause();
+        if (cause instanceof InvalidFormatException) {
+            // Берем только первую строчку из сообщения Jackson, чтобы не пугать клиента техническими деталями
+            errorMessage = "Ошибка парсинга: " + cause.getMessage().split("\n")[0];
+        }
+
+        ApiError apiError = new ApiError(
+                HttpStatus.BAD_REQUEST.value(),
+                errorMessage,
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(apiError);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ApiError> handleEntityNotFoundException(EntityNotFoundException ex) {
+
+        // Создаем объект ошибки со статусом 404
+        ApiError apiError = new ApiError(
+                HttpStatus.NOT_FOUND.value(),
+                ex.getMessage(), // Берем сообщение из выброшенного исключения ("Адрес с ID ... не найден...")
+                LocalDateTime.now()
+        );
+
+        // Возвращаем статус 404 Not Found
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
                 .body(apiError);
     }
 }

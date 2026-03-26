@@ -7,9 +7,15 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "addresses")
+// 1. Перехватываем команду DELETE и заменяем на UPDATE
+@SQLDelete(sql = "UPDATE addresses SET deleted = true WHERE id=?")
+// 2. Автоматически фильтруем SELECT-запросы, чтобы не видеть удаленные адреса
+@SQLRestriction("deleted = false")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,6 +32,9 @@ public class Address {
 
     @Column(name = "house_number")
     private String houseNumber;
+
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
 
     // --- СВЯЗЬ ---
     @ManyToOne(fetch = FetchType.LAZY) // LAZY - грузим пользователя только по требованию

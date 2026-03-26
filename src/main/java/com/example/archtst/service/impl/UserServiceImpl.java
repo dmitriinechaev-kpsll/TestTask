@@ -14,6 +14,7 @@ import com.example.archtst.repository.RoleRepository;
 import com.example.archtst.repository.UserRepository;
 import com.example.archtst.repository.specification.UserSpecification;
 import com.example.archtst.service.UserService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -156,6 +157,46 @@ public class UserServiceImpl implements UserService {
         Address savedAddress = addressRepository.save(address);
         return addressMapper.toResponseDTO(savedAddress);
  */
+    }
+
+    @Override
+    public Page<AddressResponseDTO> getUserAddresses(UUID userId, Pageable pageable) {
+
+        // 1. Проверяем, существует ли вообще такой юзер (чтобы не вернуть пустую страницу для фейкового ID)
+        if (!userRepository.existsById(userId)) {
+            // Выбрасываем твою ошибку (например, EntityNotFoundException),
+            // которую поймает GlobalExceptionHandler и вернет 404
+            throw new EntityNotFoundException("Пользователь с ID " + userId + " не найден");
+        }
+
+        // 2. Достаем адреса страницами из базы
+        Page<Address> addressPage = addressRepository.findAllByUserId(userId, pageable);
+
+        // 3. Конвертируем каждый Address внутри страницы в AddressResponseDTO
+        return addressPage.map(address -> addressMapper.toResponseDTO(address));
+    }
+
+    @Override
+    @Transactional // Обязательно! Чтобы все изменения сохранились в базу одной транзакцией
+    public void removeAddress(UUID userId, UUID addressId) {
+
+        // 1. Находим пользователя
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Пользователь с ID " + userId + " не найден"));
+
+        // 2. Ищем нужный адрес в коллекции адресов этого пользователя
+        Address addressToRemove = user.getAddresses().stream()
+                .filter(address -> address.getId().equals(addressId))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Адрес с ID " + addressId + " не найден у данного пользователя"));
+
+        // 3. Удаляем адрес из списка
+        user.getAddresses().remove(addressToRemove);
+
+        // Магия: так как у нас в сущности User над списком адресов
+        // должно стоять orphanRemoval = true,
+        // Hibernate автоматически удалит эту запись из таблицы адресов!
+        userRepository.save(user);
     }
 
     @Override
