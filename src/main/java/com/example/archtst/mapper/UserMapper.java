@@ -2,7 +2,6 @@ package com.example.archtst.mapper;
 
 import com.example.archtst.dto.UserRequestDTO;
 import com.example.archtst.dto.UserResponseDTO;
-import com.example.archtst.entity.Role;
 import com.example.archtst.entity.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;

@@ -1,11 +1,11 @@
 package com.example.archtst;
 
 import com.codeborne.selenide.CollectionCondition;
-import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Configuration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.By;
+
+import java.io.File;
 
 import static com.codeborne.selenide.Selenide.*;
 import static com.codeborne.selenide.Condition.*;
@@ -21,7 +21,10 @@ public class UiTest2 {
 
     @Test
     void shouldCreateUserAndAssignRole() {
-        open("file:///D://Work//SashaProjectTest//Frontend_test//index.html");
+        //open("file:///D://Work//SashaProjectTest//Frontend_test//index.html");
+        File file = new File("src/test/resources/index.html");
+        String url = "file:///" + file.getAbsolutePath();
+        open(url);
 
         // 1. Открываем модалку и создаем юзера
         $(".btn-success").click(); // Кнопка "Добавить пользователя"
@@ -36,7 +39,7 @@ public class UiTest2 {
 
         // 2. Проверяем, что юзер появился в таблице
         $("#usersTableBody").shouldHave(text("Тестовый Юзер"));
-        $("#usersTableBody").shouldHave(text("test@example.com"));
+        $("#usersTableBody").shouldHave(text(uniqueEmail));
 
         // 3. Открываем модалку ролей (берем первую строку таблицы)
         $("#usersTableBody tr").$(".btn-outline-warning").click();

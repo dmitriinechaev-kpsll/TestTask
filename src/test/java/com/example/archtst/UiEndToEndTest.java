@@ -4,6 +4,8 @@ import com.codeborne.selenide.Configuration;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+
 import static com.codeborne.selenide.CollectionCondition.sizeGreaterThan;
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.*;
@@ -47,13 +49,18 @@ public class UiEndToEndTest {
 
         // 7. Проверяем, что наш новый юзер появился в главной таблице
         $("#usersTableBody").shouldHave(text("UI Автотест"));
-        $("#usersTableBody").shouldHave(text("autotest@example.com"));
+        String expectedEmail = "autotest" + uniqueSuffix + "@example.com";
+        $("#usersTableBody").shouldHave(text(expectedEmail));
+        //$("#usersTableBody").shouldHave(text("autotest@example.com"));
         $("#usersTableBody").shouldHave(text("99"));
     }
     @Test
     void shouldSearchUserByName() {
         // 1. Открываем страницу (замени на свой путь)
-        open("file:///D://Work//SashaProjectTest//Frontend_test//index.html");
+        //open("file:///D://Work//SashaProjectTest//Frontend_test//index.html");
+        File file = new File("src/test/resources/index.html");
+        String url = "file:///" + file.getAbsolutePath();
+        open(url);
         $("#usersTableBody").shouldNotHave(text("Загрузка..."));
 
         // 2. Вводим в поле поиска имя (например, "Глафира" - если она есть в базе)

@@ -42,7 +42,7 @@ public class Address {
     @JoinColumn(name = "user_id") // Указываем имя колонки в таблице addresses
     private User user;
 
-    // --- ТАЙМСТАМПЫ ---
+    // --- Timestamp ---
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

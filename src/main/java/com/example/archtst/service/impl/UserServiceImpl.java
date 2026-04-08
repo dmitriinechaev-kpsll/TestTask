@@ -102,7 +102,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException("id: " + userId));
 
         Address addressToSave = null;
-        boolean isCreated = false; // Флаг для контроллера
+        boolean isCreated; // Флаг для контроллера
 
         // 2. Если добавляют HOME адрес, ищем, нет ли уже такого у юзера
         if (request.getType() == AddressType.HOME) {
