@@ -14,7 +14,7 @@ import java.util.*;
 @Entity
 @Table(name = "users")
 // 1. Подменяем физическое удаление на обновление флага
-@SQLDelete(sql = "UPDATE users SET deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE users SET deleted = true, updated_at = CURRENT_TIMESTAMP WHERE id=?")
 // 2. Скрываем удаленных пользователей из всех выборок (findAll, findById и т.д.)
 @SQLRestriction("deleted = false")
 @Data
@@ -73,23 +73,35 @@ public class User {
         address.setUser(null);
     }
 
-    // НОВАЯ СВЯЗЬ: Многие ко Многим
-    @ManyToMany(fetch = FetchType.EAGER) // Или LAZY, зависит от архитектуры
-    @JoinTable(
-            name = "user_roles", // Имя промежуточной таблицы в БД
-            joinColumns = @JoinColumn(name = "user_id"), // Колонка, которая смотрит на этот класс (User)
-            inverseJoinColumns = @JoinColumn(name = "role_id") // Колонка, которая смотрит на другой класс (Role)
-    )
-    // В ManyToMany лучше использовать Set (Множество), а не List,
-    // чтобы Hibernate работал эффективнее и не допускал дубликатов.
-    private Set<Role> roles = new HashSet<>();
+//    // НОВАЯ СВЯЗЬ: Многие ко Многим
+//    @ManyToMany(fetch = FetchType.EAGER) // Или LAZY, зависит от архитектуры
+//    @JoinTable(
+//            name = "user_roles", // Имя промежуточной таблицы в БД
+//            joinColumns = @JoinColumn(name = "user_id"), // Колонка, которая смотрит на этот класс (User)
+//            inverseJoinColumns = @JoinColumn(name = "role_id") // Колонка, которая смотрит на другой класс (Role)
+//    )
+//    // В ManyToMany лучше использовать Set (Множество), а не List,
+//    // чтобы Hibernate работал эффективнее и не допускал дубликатов.
+//    private Set<Role> roles = new HashSet<>();
+//
+//    // Вспомогательные методы
+//    public void addRole(Role role) {
+//        this.roles.add(role);
+//    }
+//
+//    public void removeRole(Role role) {
+//        this.roles.remove(role);
+//    }
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<UserRole> userRoles = new HashSet<>();
 
-    // Вспомогательные методы
+    // Обнови helper-методы, если они есть:
     public void addRole(Role role) {
-        this.roles.add(role);
+        UserRole userRole = new UserRole(this, role);
+        this.userRoles.add(userRole);
     }
 
     public void removeRole(Role role) {
-        this.roles.remove(role);
+        this.userRoles.removeIf(ur -> ur.getRole().equals(role));
     }
 }

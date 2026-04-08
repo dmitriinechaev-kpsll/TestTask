@@ -24,9 +24,9 @@ public class UserMapper {
     // Entity -> UserResponseDTO
     public UserResponseDTO userToResponseDTO(User user) {
         UserResponseDTO dto = modelMapper.map(user, UserResponseDTO.class);
-        if (user.getRoles() != null) {
-            Set<String> roleNames = user.getRoles().stream()
-                    .map(Role::getName)
+        if (user.getUserRoles() != null) {
+            Set<String> roleNames = user.getUserRoles().stream()
+                    .map(ur -> ur.getRole().getName())
                     .collect(Collectors.toSet());
             dto.setRoles(roleNames);
         }

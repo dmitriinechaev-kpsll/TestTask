@@ -5,6 +5,7 @@ import com.example.archtst.entity.Address;
 import com.example.archtst.entity.Role;
 import com.example.archtst.entity.User;
 import com.example.archtst.enums.AddressType;
+import com.example.archtst.exception.DuplicateResourceException;
 import com.example.archtst.exception.UserAlreadyExistException;
 import com.example.archtst.exception.UserNotFoundException;
 import com.example.archtst.mapper.AddressMapper;
@@ -78,7 +79,7 @@ public class UserServiceImpl implements UserService {
 
         // 2. Очищаем все роли!
         // Hibernate увидит это и сделает настоящий DELETE FROM user_roles WHERE user_id = ?
-        user.getRoles().clear();
+        user.getUserRoles().clear();
 
         // 3. Вызываем "удаление" юзера
         // Hibernate сделает UPDATE users SET deleted = true WHERE id = ?
@@ -109,6 +110,15 @@ public class UserServiceImpl implements UserService {
                     .filter(addr -> addr.getType() == AddressType.HOME)
                     .findFirst()
                     .orElse(null); // Вернет null, если адреса еще нет
+        } else {
+            boolean isPhysicalDuplicate = user.getAddresses().stream()
+                    .anyMatch(a -> a.getCity().equalsIgnoreCase(request.getCity()) &&
+                            a.getStreet().equalsIgnoreCase(request.getStreet()) &&
+                            a.getHouseNumber().equalsIgnoreCase(request.getHouseNumber()));
+
+            if (isPhysicalDuplicate) {
+                throw new DuplicateResourceException("Такой физический адрес уже добавлен этому пользователю");
+            }
         }
 
         // 3. Выбираем стратегию: ОБНОВЛЕНИЕ или СОЗДАНИЕ

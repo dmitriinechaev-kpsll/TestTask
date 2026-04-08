@@ -13,7 +13,8 @@ import org.hibernate.annotations.SQLRestriction;
 @Entity
 @Table(name = "addresses")
 // 1. Перехватываем команду DELETE и заменяем на UPDATE
-@SQLDelete(sql = "UPDATE addresses SET deleted = true WHERE id=?")
+//@SQLDelete(sql = "UPDATE addresses SET deleted = true WHERE id=?")
+@SQLDelete(sql = "UPDATE addresses SET deleted = true, updated_at = CURRENT_TIMESTAMP WHERE id=?")
 // 2. Автоматически фильтруем SELECT-запросы, чтобы не видеть удаленные адреса
 @SQLRestriction("deleted = false")
 @Getter
