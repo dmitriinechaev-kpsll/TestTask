@@ -15,7 +15,6 @@ public class UserMapper {
 
     private final ModelMapper modelMapper;
 
-    // Spring автоматически внедрит бин ModelMapper
     public UserMapper(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
     }

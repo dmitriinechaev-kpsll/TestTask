@@ -13,9 +13,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "users")
-// 1. Подменяем физическое удаление на обновление флага
 @SQLDelete(sql = "UPDATE users SET deleted = true, updated_at = CURRENT_TIMESTAMP WHERE id=?")
-// 2. Скрываем удаленных пользователей из всех выборок (findAll, findById и т.д.)
 @SQLRestriction("deleted = false")
 @Data
 @NoArgsConstructor
@@ -28,15 +26,12 @@ public class User {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    // @Column(nullable = false, length = 100)
     private String name;
 
-    // @Column(unique = true, nullable = false, length = 100)
     private String email;
 
     private Integer age;
 
-    //@Column(name = "created_at", updatable = false)
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -45,23 +40,19 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    //@Column(nullable = false)
     private boolean deleted = false;
 
     @Column(name = "shoe_size")
     private Integer shoeSize;
 
-    // --- НОВАЯ СВЯЗЬ ---
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @OneToMany(
-            mappedBy = "user", // Ссылаемся на поле "user" в классе Address
-            cascade = CascadeType.ALL, // Если сохраняем Юзера, сохраняются и адреса
-            orphanRemoval = true // Если удалить адрес из списка, он удалится из базы
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
     )
     private List<Address> addresses = new ArrayList<>();
-
-    // ... методы helper'ы (опционально) ...
 
     public void addAddress(Address address) {
         addresses.add(address);
@@ -73,29 +64,9 @@ public class User {
         address.setUser(null);
     }
 
-//    // НОВАЯ СВЯЗЬ: Многие ко Многим
-//    @ManyToMany(fetch = FetchType.EAGER) // Или LAZY, зависит от архитектуры
-//    @JoinTable(
-//            name = "user_roles", // Имя промежуточной таблицы в БД
-//            joinColumns = @JoinColumn(name = "user_id"), // Колонка, которая смотрит на этот класс (User)
-//            inverseJoinColumns = @JoinColumn(name = "role_id") // Колонка, которая смотрит на другой класс (Role)
-//    )
-//    // В ManyToMany лучше использовать Set (Множество), а не List,
-//    // чтобы Hibernate работал эффективнее и не допускал дубликатов.
-//    private Set<Role> roles = new HashSet<>();
-//
-//    // Вспомогательные методы
-//    public void addRole(Role role) {
-//        this.roles.add(role);
-//    }
-//
-//    public void removeRole(Role role) {
-//        this.roles.remove(role);
-//    }
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserRole> userRoles = new HashSet<>();
 
-    // Обнови helper-методы, если они есть:
     public void addRole(Role role) {
         UserRole userRole = new UserRole(this, role);
         this.userRoles.add(userRole);

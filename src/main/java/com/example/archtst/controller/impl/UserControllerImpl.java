@@ -4,6 +4,7 @@ import com.example.archtst.constant.Urls;
 import com.example.archtst.controller.UserController;
 import com.example.archtst.dto.*;
 import com.example.archtst.entity.User;
+import com.example.archtst.mapper.AddressMapper;
 import com.example.archtst.mapper.UserMapper;
 import com.example.archtst.service.UserService;
 import jakarta.validation.Valid;
@@ -17,8 +18,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -29,6 +28,7 @@ public class UserControllerImpl implements UserController {
 
     private final UserService userService;
     private final UserMapper userMapper;
+    private final AddressMapper addressMapper;
 
     @PostMapping
     public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserRequestDTO userDTO) {
@@ -40,7 +40,6 @@ public class UserControllerImpl implements UserController {
     @GetMapping
     public ResponseEntity<Page<UserResponseDTO>> getAllUsers(
             @PageableDefault(size = 20) Pageable pageable) {
-        // log.info("GET " + Urls.BASE_URL + " - Получение всех пользователей с пагинацией");
         Page<User> usersPage = userService.getAllUsers(pageable);
         Page<UserResponseDTO> responsePage = userMapper.pageToResponseDTO(usersPage);
         return ResponseEntity.ok(responsePage);
@@ -48,7 +47,6 @@ public class UserControllerImpl implements UserController {
 
     @GetMapping(Urls.BY_ID)
     public ResponseEntity<UserResponseDTO> getUserById(@PathVariable UUID id) {
-        // log.info("GET " + Urls.BASE_URL + "{} - Поиск пользователя", id);
         User user = userService.getUserById(id);
         return ResponseEntity.ok(userMapper.userToResponseDTO(user));
     }
@@ -67,39 +65,20 @@ public class UserControllerImpl implements UserController {
     ) {
         log.info("POST {} - Поиск пользователей. Фильтры: {}", Urls.SEARCH, request);
 
-        // 1. Определяем направление сортировки
         Sort.Direction direction = request.getSortDir().equalsIgnoreCase("DESC")
                 ? Sort.Direction.DESC
                 : Sort.Direction.ASC;
 
-        // 2. Создаем объект Pageable на основе данных из DTO
         Pageable pageable = PageRequest.of(
                 request.getPage(),
                 request.getSize(),
                 Sort.by(direction, request.getSortBy())
         );
 
-        // 3. Вызываем сервис, передавая ему DTO с фильтрами и настройки страницы
         Page<User> usersPage = userService.searchUsers(request, pageable);
-
-        // 4. Преобразуем Page<User> в Page<ResponseDTO>
         Page<UserResponseDTO> responsePage = userMapper.pageToResponseDTO(usersPage);
-
         return ResponseEntity.ok(responsePage);
     }
-
-/*    @GetMapping(Urls.STATS)
-    public ResponseEntity<Map<String, Object>> getStats() {
-        log.info("GET " + Urls.BASE_URL + Urls.STATS + " - Статистика");
-
-        Map<String, Object> stats = new HashMap<>();
-        stats.put("totalUsers", userService.getTotalUsersCount());
-        stats.put("timestamp", java.time.LocalDateTime.now().toString());
-        stats.put("database", "PostgreSQL");
-        stats.put("appName", "Archtst API");
-
-        return ResponseEntity.ok(stats);
-    }*/
 
     // Добавление адреса пользователю
     @PostMapping(Urls.ADDRESSES) // /users/{id}/addresses
@@ -107,15 +86,14 @@ public class UserControllerImpl implements UserController {
             @PathVariable UUID id,
             @Valid @RequestBody AddressRequestDTO request)
     {
-        //AddressResponseDTO response = userService.addAddressToUser(id, request);
-        AddressUpsertResult  result = userService.addAddressToUser(id, request);
+        AddressUpsertResult  result = userService.addAddressToUser(id, addressMapper.toEntity(request));
         if (result.isCreated()){
             return ResponseEntity
                     .status(HttpStatus.CREATED) // Возвращаем 201 Created
-                    .body(result.address());
+                    .body(addressMapper.toResponseDTO(result.address()));
         }else {
-            // Если обновили -> 200 OK
-            return ResponseEntity.ok(result.address());
+            // If updated -> 200 OK
+            return ResponseEntity.ok(addressMapper.toResponseDTO(result.address()));
         }
     }
 
@@ -128,7 +106,7 @@ public class UserControllerImpl implements UserController {
     @Override
     public ResponseEntity<Void> removeAddress(UUID id, UUID addressId) {
         userService.removeAddress(id, addressId);
-        return ResponseEntity.noContent().build(); // Возвращает статус 204
+        return ResponseEntity.noContent().build(); // Returns status 204
     }
 
     @Override
@@ -136,10 +114,7 @@ public class UserControllerImpl implements UserController {
             @PathVariable UUID id,
             @Valid @RequestBody RoleRequestDTO request
     ) {
-        // Вызываем наш исправленный метод сервиса
         UserResponseDTO response = userService.addRoleToUser(id, request);
-
-        // Возвращаем статус 200 OK и обновленного юзера в теле ответа
         return ResponseEntity.ok(response);
     }
 

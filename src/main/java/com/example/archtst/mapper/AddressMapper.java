@@ -16,7 +16,6 @@ public class AddressMapper {
     }
 
     // RequestDTO -> Entity
-    // ModelMapper сам сопоставит поля city, street, houseNumber
     public Address toEntity(AddressRequestDTO request) {
         return modelMapper.map(request, Address.class);
     }

@@ -16,8 +16,6 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
-// Включаем Soft Delete
-//@SQLDelete(sql = "UPDATE user_roles SET deleted = true WHERE id=?")
 @SQLDelete(sql = "UPDATE user_roles SET deleted = true, updated_at = CURRENT_TIMESTAMP WHERE id=?")
 @SQLRestriction("deleted = false")
 public class UserRole {
@@ -26,17 +24,13 @@ public class UserRole {
     @GeneratedValue
     private UUID id;
 
-    // Ссылка на пользователя
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Ссылка на роль
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
-
-    // --- НАШИ НОВЫЕ ПОЛЯ АУДИТА ---
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -48,10 +42,6 @@ public class UserRole {
 
     @Column(name = "deleted", nullable = false)
     private boolean deleted = false;
-
-    // ... конструкторы, геттеры и сеттеры ...
-
-    //public UserRole() {}
 
     public UserRole(User user, Role role) {
         this.user = user;

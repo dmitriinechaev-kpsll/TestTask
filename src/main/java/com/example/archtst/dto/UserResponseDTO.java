@@ -10,15 +10,15 @@ import java.util.Set;
 
 @Data
 @Builder
-@NoArgsConstructor  // Обязательно для ModelMapper
-@AllArgsConstructor // Для Builder (чтобы работал конструктор со всеми полями)
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserResponseDTO {
     private String id;
     private String name;
     private String email;
     private Integer age;
     private Integer shoeSize;
-    private Set<String> roles; // Просто отдаем список названий ролей (String)
+    private Set<String> roles;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

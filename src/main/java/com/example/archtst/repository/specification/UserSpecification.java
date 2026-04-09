@@ -14,32 +14,32 @@ import java.util.List;
 
 public class UserSpecification {
 
-    // Принимаем DTO, которое приходит в POST запросе
+    // Taking DTO, from POST
     public static Specification<User> byCriteria(UserSearchRequestDTO request) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // 1. Фильтр по Email (точное совпадение)
+            // 1. Email filter (exact match)
             emailCondition(request, root, criteriaBuilder, predicates);
 
-            // 2. Фильтр по Имени (частичное совпадение, без регистра)
+            // 2. Name filter (partial match, without register)
             nameCondition(request, root, criteriaBuilder, predicates);
 
-            // 3. Фильтр по Возрасту (старше чем)
+            // 3. Age filter (older then)
             ageCondition(request, root, criteriaBuilder, predicates);
 
-            // Собираем все предикаты через AND
+            // Gathering all predicates with AND
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
 
     private static void ageCondition(UserSearchRequestDTO request, Root<User> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
-        // 1. Проверка минимального возраста (от...)
+        // 1. Checking minimal age (from ...)
         if (request.getMinAge() != null) {
             predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(User.Fields.age), request.getMinAge()));
         }
 
-        // 2. Проверка максимального возраста (до...)
+        // 2. Checking maximum age (up ...)
         if (request.getMaxAge() != null) {
             predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(User.Fields.age), request.getMaxAge()));
         }

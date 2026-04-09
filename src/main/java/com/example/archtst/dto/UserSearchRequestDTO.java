@@ -32,15 +32,14 @@ public class UserSearchRequestDTO { // reqFilter
     @PositiveOrZero(message = "Максимальный возраст не может быть отрицательным")
     private Integer maxAge;
 
-    // для пагинации по умолчанию
     @Schema(description = "Номер страницы (начинается с 0)", example = "0", defaultValue = "0")
     @Min(value = 0, message = "Номер страницы не может быть меньше 0")
-    private int page = 0;       // Первая страница
+    private int page = 0;
 
     @Schema(description = "Количество записей на странице", example = "20", defaultValue = "20")
     @Min(value = 1, message = "Размер страницы должен быть минимум 1")
     @Max(value = 100, message = "Запрашивать больше 100 записей за раз нельзя")
-    private int size = 20;      // кол-во страниц
+    private int size = 20;
 
     @Schema(description = "Поле для сортировки (например: id, name, createdAt)", example = "createdAt")
     private String sortBy   = "name";
