@@ -14,7 +14,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
-
     private final RoleRepository roleRepository;
 
     @Override
@@ -22,20 +21,5 @@ public class RoleServiceImpl implements RoleService {
     public Role getRoleByName(String name) {
         return roleRepository.findByName(name)
                 .orElseThrow(() -> new ResourceNotFoundException("Роль с именем '" + name + "' не найдена"));
-    }
-
-    @Override
-    @Transactional
-    public Role createRole(Role newRole) {
-        if (roleRepository.existsByName(newRole.getName())) {
-            throw new DuplicateResourceException("Роль с таким именем уже существует: " + newRole.getName());
-        }
-        return roleRepository.save(newRole);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Role> getAllRoles() {
-        return roleRepository.findAll();
     }
 }
