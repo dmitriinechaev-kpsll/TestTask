@@ -139,6 +139,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
+
+    /*@Override
+    @Transactional
     public UserResponseDTO addRoleToUser(UUID userId, RoleRequestDTO request) {
         User user = this.getUserById(userId);
         Role role = roleRepository.findByName(request.roleName())
@@ -157,5 +163,5 @@ public class UserServiceImpl implements UserService {
         user.removeRole(role);
         User savedUser = userRepository.save(user);
         return userMapper.userToResponseDTO(savedUser);
-    }
+    }*/
 }

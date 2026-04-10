@@ -9,6 +9,8 @@ import java.util.UUID;
 
 public interface UserService {
 
+    User saveUser(User user);
+
     AddressUpsertResult addAddressToUser(UUID userId, Address incomingAddress);
     Page<AddressResponseDTO> getUserAddresses(UUID userId, Pageable pageable);
     void removeAddress(UUID userId, UUID addressId);
@@ -18,6 +20,6 @@ public interface UserService {
     User getUserById(UUID id);
     Page<User> searchUsers(UserSearchRequestDTO request, Pageable pageable);
     boolean deleteUser(UUID id);
-    UserResponseDTO addRoleToUser(UUID userId, RoleRequestDTO request);
-    UserResponseDTO removeRoleFromUser(UUID userId, String roleName);
+    //    UserResponseDTO addRoleToUser(UUID userId, RoleRequestDTO request);
+    //UserResponseDTO removeRoleFromUser(UUID userId, String roleName);
 }

@@ -4,6 +4,7 @@ import com.example.archtst.constant.Urls;
 import com.example.archtst.controller.UserController;
 import com.example.archtst.dto.*;
 import com.example.archtst.entity.User;
+import com.example.archtst.facade.UserRoleFacade;
 import com.example.archtst.mapper.AddressMapper;
 import com.example.archtst.mapper.UserMapper;
 import com.example.archtst.service.UserService;
@@ -29,6 +30,7 @@ public class UserControllerImpl implements UserController {
     private final UserService userService;
     private final UserMapper userMapper;
     private final AddressMapper addressMapper;
+    private final UserRoleFacade userRoleFacade;
 
     @PostMapping
     public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserRequestDTO userDTO) {
@@ -114,13 +116,20 @@ public class UserControllerImpl implements UserController {
             @PathVariable UUID id,
             @Valid @RequestBody RoleRequestDTO request
     ) {
-        UserResponseDTO response = userService.addRoleToUser(id, request);
-        return ResponseEntity.ok(response);
+        // Передаем в Фасад только чистые данные (UUID и String)
+        User updatedUser = userRoleFacade.addRoleToUser(id, request.roleName());
+        // Маппим ответ
+        return ResponseEntity.ok(userMapper.userToResponseDTO(updatedUser));
+
+        //UserResponseDTO response = userService.addRoleToUser(id, request);
+        //return ResponseEntity.ok(response);
     }
 
     @Override
     public ResponseEntity<UserResponseDTO> removeRole(UUID id, String roleName) {
-        UserResponseDTO response = userService.removeRoleFromUser(id, roleName);
-        return ResponseEntity.ok(response);
+        User updatedUser = userRoleFacade.removeRoleFromUser(id, roleName);
+        return ResponseEntity.ok(userMapper.userToResponseDTO(updatedUser));
+//        UserResponseDTO response = userService.removeRoleFromUser(id, roleName);
+//        return ResponseEntity.ok(response);
     }
 }
