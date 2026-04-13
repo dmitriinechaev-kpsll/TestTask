@@ -2,6 +2,8 @@ package com.example.archtst.mapper;
 
 import com.example.archtst.dto.UserRequestDTO;
 import com.example.archtst.dto.UserResponseDTO;
+import com.example.archtst.dto.UserSearchCriteria;
+import com.example.archtst.dto.UserSearchRequestDTO;
 import com.example.archtst.entity.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -39,5 +41,18 @@ public class UserMapper {
     // RequestDTO -> Entity
     public User requestToEntity(UserRequestDTO dto) {
         return modelMapper.map(dto, User.class);
+    }
+
+    public UserSearchCriteria toCriteria(UserSearchRequestDTO dto){
+        if (dto == null) {
+            return null;
+        }
+
+        return new UserSearchCriteria(
+                dto.getEmail(),
+                dto.getNames(),
+                dto.getMinAge(),
+                dto.getMaxAge()
+        );
     }
 }

@@ -3,7 +3,9 @@ package com.example.archtst.controller.impl;
 import com.example.archtst.constant.Urls;
 import com.example.archtst.controller.UserController;
 import com.example.archtst.dto.*;
+import com.example.archtst.entity.Address;
 import com.example.archtst.entity.User;
+import com.example.archtst.facade.UserAddressFacade;
 import com.example.archtst.facade.UserRoleFacade;
 import com.example.archtst.mapper.AddressMapper;
 import com.example.archtst.mapper.UserMapper;
@@ -29,6 +31,7 @@ public class UserControllerImpl implements UserController {
 
     private final UserService userService;
     private final UserMapper userMapper;
+    private final UserAddressFacade userAddressFacade;
     private final AddressMapper addressMapper;
     private final UserRoleFacade userRoleFacade;
 
@@ -61,54 +64,50 @@ public class UserControllerImpl implements UserController {
         return ResponseEntity.noContent().build(); // Возвращает 204
     }
 
-    @PostMapping(Urls.SEARCH) // Например: "/api/users/search"
+    @PostMapping(Urls.SEARCH) // "/api/users/search"
     public ResponseEntity<Page<UserResponseDTO>> searchUsers(
             @Valid @RequestBody UserSearchRequestDTO request
     ) {
-        log.info("POST {} - Поиск пользователей. Фильтры: {}", Urls.SEARCH, request);
+        UserSearchCriteria criteria = userMapper.toCriteria(request);
 
-        Sort.Direction direction = request.getSortDir().equalsIgnoreCase("DESC")
-                ? Sort.Direction.DESC
-                : Sort.Direction.ASC;
-
+        Sort.Direction direction = Sort.Direction.fromString(request.getSortDir());
         Pageable pageable = PageRequest.of(
                 request.getPage(),
                 request.getSize(),
                 Sort.by(direction, request.getSortBy())
         );
 
-        Page<User> usersPage = userService.searchUsers(request, pageable);
-        Page<UserResponseDTO> responsePage = userMapper.pageToResponseDTO(usersPage);
-        return ResponseEntity.ok(responsePage);
+        Page<User> usersPage = userService.searchUsers(criteria, pageable);
+
+        return ResponseEntity.ok(usersPage.map(userMapper::userToResponseDTO));
     }
 
-    // Добавление адреса пользователю
     @PostMapping(Urls.ADDRESSES) // /users/{id}/addresses
     public ResponseEntity<AddressResponseDTO> addAddress(
             @PathVariable UUID id,
             @Valid @RequestBody AddressRequestDTO request)
     {
-        AddressUpsertResult  result = userService.addAddressToUser(id, addressMapper.toEntity(request));
-        if (result.isCreated()){
-            return ResponseEntity
-                    .status(HttpStatus.CREATED) // Возвращаем 201 Created
-                    .body(addressMapper.toResponseDTO(result.address()));
-        }else {
-            // If updated -> 200 OK
-            return ResponseEntity.ok(addressMapper.toResponseDTO(result.address()));
+        Address incomingAddress = addressMapper.toEntity(request);
+        UserAddressFacade.AddressOperationResult result = userAddressFacade.addAddressToUser(id, incomingAddress);
+        AddressResponseDTO responseDTO = addressMapper.toResponseDTO(result.address());
+        if (result.isCreated()) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+        } else {
+            return ResponseEntity.ok(responseDTO);
         }
     }
 
     @Override
     public ResponseEntity<Page<AddressResponseDTO>> getUserAddresses(UUID id, Pageable pageable) {
-        Page<AddressResponseDTO> addresses = userService.getUserAddresses(id, pageable);
-        return ResponseEntity.ok(addresses);
+        Page<Address> addressPage = userAddressFacade.getUserAddresses(id, pageable);
+        Page<AddressResponseDTO> responsePage = addressPage.map(addressMapper::toResponseDTO);
+        return ResponseEntity.ok(responsePage);
     }
 
     @Override
     public ResponseEntity<Void> removeAddress(UUID id, UUID addressId) {
-        userService.removeAddress(id, addressId);
-        return ResponseEntity.noContent().build(); // Returns status 204
+        userAddressFacade.removeAddress(id, addressId);
+        return ResponseEntity.noContent().build(); //  Returns status 204
     }
 
     @Override
@@ -116,20 +115,13 @@ public class UserControllerImpl implements UserController {
             @PathVariable UUID id,
             @Valid @RequestBody RoleRequestDTO request
     ) {
-        // Передаем в Фасад только чистые данные (UUID и String)
         User updatedUser = userRoleFacade.addRoleToUser(id, request.roleName());
-        // Маппим ответ
         return ResponseEntity.ok(userMapper.userToResponseDTO(updatedUser));
-
-        //UserResponseDTO response = userService.addRoleToUser(id, request);
-        //return ResponseEntity.ok(response);
     }
 
     @Override
     public ResponseEntity<UserResponseDTO> removeRole(UUID id, String roleName) {
         User updatedUser = userRoleFacade.removeRoleFromUser(id, roleName);
         return ResponseEntity.ok(userMapper.userToResponseDTO(updatedUser));
-//        UserResponseDTO response = userService.removeRoleFromUser(id, roleName);
-//        return ResponseEntity.ok(response);
     }
 }
