@@ -2,6 +2,7 @@ package com.example.archtst.controller;
 
 import com.example.archtst.constant.Urls;
 import com.example.archtst.dto.*;
+import com.example.archtst.enums.RoleName;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,7 +16,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
 import java.util.UUID;
 
 @RequestMapping(Urls.BASE_URL)
@@ -35,7 +35,7 @@ public interface UserController {
     @GetMapping
     ResponseEntity<Page<UserResponseDTO>> getAllUsers(
             @ParameterObject
-            @PageableDefault(page = 0, size = 10, sort = "id")
+            @PageableDefault(sort = "id")
             Pageable pageable
     );
 
@@ -56,9 +56,6 @@ public interface UserController {
     })
     @DeleteMapping(Urls.BY_ID)
     ResponseEntity<Void> deleteUser(@PathVariable UUID id);
-
-    //    @GetMapping(Urls.STATS)
-    //ResponseEntity<Map<String, Object>> getStats();
 
     // Добавление адреса пользователю
     @Operation(summary = "Добавить новый адрес пользователю")
@@ -120,7 +117,7 @@ public interface UserController {
     @DeleteMapping(Urls.ROLES + "/{roleName}")
     ResponseEntity<UserResponseDTO> removeRole(
             @PathVariable UUID id,
-            @PathVariable String roleName
+            @PathVariable RoleName roleName
     );
 
 }

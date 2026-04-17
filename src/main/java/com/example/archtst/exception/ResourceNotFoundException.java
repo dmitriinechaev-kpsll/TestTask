@@ -1,8 +1,7 @@
 package com.example.archtst.exception;
 
-public class ResourceNotFoundException extends RuntimeException{
-    public ResourceNotFoundException(String s)
-    {
+public class ResourceNotFoundException extends RuntimeException {
+    public ResourceNotFoundException(String s) {
         super(s);
     }
 }

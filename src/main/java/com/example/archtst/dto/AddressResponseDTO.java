@@ -10,10 +10,10 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddressResponseDTO{
-        UUID   id;
-        String city;
-        String street;
-        String houseNumber;
-        AddressType type;
+public class AddressResponseDTO {
+    private UUID id;
+    private String city;
+    private String street;
+    private String houseNumber;
+    private AddressType type;
 }

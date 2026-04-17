@@ -1,6 +1,7 @@
 package com.example.archtst.service.impl;
 
 import com.example.archtst.entity.Role;
+import com.example.archtst.enums.RoleName;
 import com.example.archtst.exception.ResourceNotFoundException;
 import com.example.archtst.repository.RoleRepository;
 import com.example.archtst.service.RoleService;
@@ -16,7 +17,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional(readOnly = true)
-    public Role getRoleByName(String name) {
+    public Role getRoleByName(RoleName name) {
         return roleRepository.findByName(name)
                 .orElseThrow(() -> new ResourceNotFoundException("Роль с именем '" + name + "' не найдена"));
     }

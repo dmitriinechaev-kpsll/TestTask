@@ -1,8 +1,15 @@
 package com.example.archtst.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import com.example.archtst.enums.RoleName;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record RoleRequestDTO(
-        @NotBlank(message = "Название роли не может быть пустым")
-        String roleName // For example: "ROLE_ADMIN"
-) {}
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class RoleRequestDTO {
+        @NotNull(message = "Название роли не может быть пустым")
+        private RoleName roleName; // For example: "ROLE_ADMIN"
+}

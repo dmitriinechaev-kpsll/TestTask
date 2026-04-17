@@ -19,6 +19,11 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     @NonNull
     @Override
     @EntityGraph(attributePaths = {"userRoles", "userRoles.role"})
+    Optional<User> findById(@NonNull UUID id);
+
+    @NonNull
+    @Override
+    @EntityGraph(attributePaths = {"userRoles", "userRoles.role"})
     Page<User> findAll(@NonNull Pageable pageable);
 
     @NonNull
@@ -26,5 +31,6 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     @EntityGraph(attributePaths = {"userRoles", "userRoles.role"})
     Page<User> findAll(@Nullable Specification<User> spec, @NonNull Pageable pageable);
 
+    @EntityGraph(attributePaths = {"userRoles", "userRoles.role"})
     Optional<User> findByEmail(String email);
 }

@@ -33,26 +33,26 @@ public class UserSpecification {
 
     private static void ageCondition(UserSearchCriteria criteria, Root<User> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
         // 1. Checking minimal age (from ...)
-        if (criteria.minAge() != null) {
-            predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(User.Fields.age), criteria.minAge()));
+        if (criteria.getMinAge() != null) {
+            predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get(User.Fields.age), criteria.getMinAge()));
         }
 
         // 2. Checking maximum age (up ...)
-        if (criteria.maxAge() != null) {
-            predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(User.Fields.age), criteria.maxAge()));
+        if (criteria.getMaxAge() != null) {
+            predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get(User.Fields.age), criteria.getMaxAge()));
         }
     }
 
     private static void emailCondition(UserSearchCriteria criteria, Root<User> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
-        if (criteria.email() != null && !criteria.email().isBlank()) {
-            predicates.add(criteriaBuilder.equal(root.get(User.Fields.email), criteria.email()));
+        if (criteria.getEmail() != null && !criteria.getEmail().isBlank()) {
+            predicates.add(criteriaBuilder.equal(root.get(User.Fields.email), criteria.getEmail()));
         }
     }
 
     private static void nameCondition(UserSearchCriteria criteria, Root<User> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
-        if (criteria.names()!=null && !criteria.names().isEmpty()) {
+        if (criteria.getNames()!=null && !criteria.getNames().isEmpty()) {
             List<Predicate> namePredicates = new ArrayList<>();
-            for (String name : criteria.names()) {
+            for (String name : criteria.getNames()) {
                 if (StringUtils.hasText(name)) {
                     namePredicates.add(criteriaBuilder.like(
                             criteriaBuilder.lower(root.get(User.Fields.name)),

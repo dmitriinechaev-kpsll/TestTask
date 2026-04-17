@@ -1,5 +1,6 @@
 package com.example.archtst.entity;
 
+import com.example.archtst.enums.RoleName;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -20,6 +21,7 @@ public class Role {
     private UUID id;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
     @Column()
-    private String name;
+    private RoleName name;
 }

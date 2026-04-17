@@ -60,7 +60,9 @@ public class UiTest2 {
 
     @Test
     void shouldSearchUserByName() {
-        open("file:///D://Work//SashaProjectTest//Frontend_test//index.html");
+        File file = new File("src/test/resources/index.html");
+        String url = "file:///" + file.getAbsolutePath();
+        open(url);
 
         // Вводим имя в поиск
         $("#searchName").setValue("Тестовый");

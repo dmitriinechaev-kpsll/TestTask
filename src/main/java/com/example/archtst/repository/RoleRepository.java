@@ -1,6 +1,7 @@
 package com.example.archtst.repository;
 
 import com.example.archtst.entity.Role;
+import com.example.archtst.enums.RoleName;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,6 +10,5 @@ import java.util.UUID;
 
 @Repository
 public interface RoleRepository extends JpaRepository<Role, UUID> {
-    Optional<Role> findByName(String name);
-    boolean existsByName(String name);
+    Optional<Role> findByName(RoleName name);
 }

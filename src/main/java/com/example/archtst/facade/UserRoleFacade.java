@@ -2,6 +2,7 @@ package com.example.archtst.facade;
 
 import com.example.archtst.entity.Role;
 import com.example.archtst.entity.User;
+import com.example.archtst.enums.RoleName;
 import com.example.archtst.service.RoleService;
 import com.example.archtst.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class UserRoleFacade {
     private final RoleService roleService;
 
     @Transactional
-    public User addRoleToUser(UUID userId, String roleName) {
+    public User addRoleToUser(UUID userId, RoleName roleName) {
         User user = userService.getUserById(userId);
         Role role = roleService.getRoleByName(roleName);
         user.addRole(role);
@@ -26,7 +27,7 @@ public class UserRoleFacade {
     }
 
     @Transactional
-    public User removeRoleFromUser(UUID userId, String roleName) {
+    public User removeRoleFromUser(UUID userId, RoleName roleName) {
         User user = userService.getUserById(userId);
         Role role = roleService.getRoleByName(roleName);
         user.removeRole(role);

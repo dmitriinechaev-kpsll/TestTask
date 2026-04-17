@@ -5,6 +5,7 @@ import com.example.archtst.controller.UserController;
 import com.example.archtst.dto.*;
 import com.example.archtst.entity.Address;
 import com.example.archtst.entity.User;
+import com.example.archtst.enums.RoleName;
 import com.example.archtst.facade.UserAddressFacade;
 import com.example.archtst.facade.UserRoleFacade;
 import com.example.archtst.mapper.AddressMapper;
@@ -92,9 +93,8 @@ public class UserControllerImpl implements UserController {
         AddressResponseDTO responseDTO = addressMapper.toResponseDTO(result.address());
         if (result.isCreated()) {
             return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
-        } else {
-            return ResponseEntity.ok(responseDTO);
         }
+        return ResponseEntity.ok(responseDTO);
     }
 
     @Override
@@ -115,12 +115,12 @@ public class UserControllerImpl implements UserController {
             @PathVariable UUID id,
             @Valid @RequestBody RoleRequestDTO request
     ) {
-        User updatedUser = userRoleFacade.addRoleToUser(id, request.roleName());
+        User updatedUser = userRoleFacade.addRoleToUser(id, request.getRoleName());
         return ResponseEntity.ok(userMapper.userToResponseDTO(updatedUser));
     }
 
     @Override
-    public ResponseEntity<UserResponseDTO> removeRole(UUID id, String roleName) {
+    public ResponseEntity<UserResponseDTO> removeRole(UUID id, RoleName roleName) {
         User updatedUser = userRoleFacade.removeRoleFromUser(id, roleName);
         return ResponseEntity.ok(userMapper.userToResponseDTO(updatedUser));
     }

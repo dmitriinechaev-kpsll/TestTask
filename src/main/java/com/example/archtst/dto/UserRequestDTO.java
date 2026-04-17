@@ -1,5 +1,6 @@
 package com.example.archtst.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -26,6 +27,7 @@ public class UserRequestDTO {
     @Schema(description = "Размер обуви", example = "42")
     @Min(value = 10, message = "Размер не может быть меньше 10")
     @Max(value = 60, message = "Размер не может быть больше 60")
+    @JsonProperty("shoe_size")
     private Integer shoeSize;
 
     @Schema(description = "Возраст пользователя", example = "25")

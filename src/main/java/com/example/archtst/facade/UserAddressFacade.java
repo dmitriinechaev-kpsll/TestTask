@@ -2,6 +2,7 @@ package com.example.archtst.facade;
 
 import com.example.archtst.entity.Address;
 import com.example.archtst.entity.User;
+import com.example.archtst.exception.InvalidAddressOwnerException;
 import com.example.archtst.service.AddressService;
 import com.example.archtst.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +45,7 @@ public class UserAddressFacade {
         User user = userService.getUserById(userId);
         Address address = addressService.getAddressById(addressId);
         if (!address.getUser().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("Этот адрес не принадлежит данному пользователю");
+            throw new InvalidAddressOwnerException("Этот адрес не принадлежит данному пользователю");
         }
         addressService.deleteAddress(address);
     }

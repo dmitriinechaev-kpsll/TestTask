@@ -5,6 +5,7 @@ import com.example.archtst.dto.UserResponseDTO;
 import com.example.archtst.dto.UserSearchCriteria;
 import com.example.archtst.dto.UserSearchRequestDTO;
 import com.example.archtst.entity.User;
+import com.example.archtst.enums.RoleName;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -25,7 +26,7 @@ public class UserMapper {
     public UserResponseDTO userToResponseDTO(User user) {
         UserResponseDTO dto = modelMapper.map(user, UserResponseDTO.class);
         if (user.getUserRoles() != null) {
-            Set<String> roleNames = user.getUserRoles().stream()
+            Set<RoleName> roleNames = user.getUserRoles().stream()
                     .map(ur -> ur.getRole().getName())
                     .collect(Collectors.toSet());
             dto.setRoles(roleNames);
