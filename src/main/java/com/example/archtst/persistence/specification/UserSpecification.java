@@ -1,7 +1,7 @@
-package com.example.archtst.repository.specification;
+package com.example.archtst.persistence.specification;
 
 import com.example.archtst.dto.UserSearchCriteria;
-import com.example.archtst.entity.User;
+import com.example.archtst.persistence.entity.User;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;

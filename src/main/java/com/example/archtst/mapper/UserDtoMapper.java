@@ -4,8 +4,7 @@ import com.example.archtst.dto.UserRequestDTO;
 import com.example.archtst.dto.UserResponseDTO;
 import com.example.archtst.dto.UserSearchCriteria;
 import com.example.archtst.dto.UserSearchRequestDTO;
-import com.example.archtst.entity.User;
-import com.example.archtst.enums.RoleName;
+import com.example.archtst.model.UserModel;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
@@ -14,19 +13,24 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
-public class UserMapper {
+public class UserDtoMapper {
 
     private final ModelMapper modelMapper;
 
-    public UserMapper(ModelMapper modelMapper) {
+    public UserDtoMapper(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
     }
 
-    // Entity -> UserResponseDTO
-    public UserResponseDTO userToResponseDTO(User user) {
-        UserResponseDTO dto = modelMapper.map(user, UserResponseDTO.class);
-        if (user.getUserRoles() != null) {
-            Set<RoleName> roleNames = user.getUserRoles().stream()
+    public UserModel toModel(UserRequestDTO dto) {
+        if (dto == null) return null;
+        return modelMapper.map(dto, UserModel.class);
+    }
+
+    public UserResponseDTO toResponseDTO(UserModel model) {
+        if (model == null) return null;
+        UserResponseDTO dto = modelMapper.map(model, UserResponseDTO.class);
+        if (model.getUserRoles() != null) {
+            Set<com.example.archtst.enums.RoleName> roleNames = model.getUserRoles().stream()
                     .map(ur -> ur.getRole().getName())
                     .collect(Collectors.toSet());
             dto.setRoles(roleNames);
@@ -34,21 +38,12 @@ public class UserMapper {
         return dto;
     }
 
-    // Page<Entity> -> Page<ResponseDTO>
-    public Page<UserResponseDTO> pageToResponseDTO(Page<User> usersPage) {
-        return usersPage.map(this::userToResponseDTO);
+    public Page<UserResponseDTO> pageToResponseDTO(Page<UserModel> usersPage) {
+        return usersPage.map(this::toResponseDTO);
     }
 
-    // RequestDTO -> Entity
-    public User requestToEntity(UserRequestDTO dto) {
-        return modelMapper.map(dto, User.class);
-    }
-
-    public UserSearchCriteria toCriteria(UserSearchRequestDTO dto){
-        if (dto == null) {
-            return null;
-        }
-
+    public UserSearchCriteria toCriteria(UserSearchRequestDTO dto) {
+        if (dto == null) return null;
         return new UserSearchCriteria(
                 dto.getEmail(),
                 dto.getNames(),

@@ -3,7 +3,7 @@ package com.example.archtst.controller;
 import com.example.archtst.AbstractIntegrationTest;
 import com.example.archtst.dto.UserRequestDTO;
 import com.example.archtst.dto.UserSearchRequestDTO;
-import com.example.archtst.repository.UserRepository;
+import com.example.archtst.persistence.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +46,7 @@ class UserControllerTest extends AbstractIntegrationTest {
         newUser.setShoeSize(42);
 
         // --- 2. Действие: Создаем юзера (When) ---
-        mockMvc.perform(post("/api/users")
+        mockMvc.perform(post("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newUser)))
                 .andExpect(status().isOk()) // Ожидаем 200 OK
@@ -61,7 +61,8 @@ class UserControllerTest extends AbstractIntegrationTest {
         searchRequest.setMinAge(20);
         searchRequest.setMaxAge(30);
 
-        mockMvc.perform(post("/api/users/search") // Или какой у тебя URL для поиска
+        mockMvc.perform(post("/api/users/v1/" +
+                        "search") // Или какой у тебя URL для поиска
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(searchRequest)))
                 .andExpect(status().isOk())

@@ -1,4 +1,4 @@
-package com.example.archtst.entity;
+package com.example.archtst.persistence.entity;
 
 import com.example.archtst.enums.AddressType;
 import jakarta.persistence.*;

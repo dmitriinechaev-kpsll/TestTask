@@ -125,4 +125,10 @@ public class GlobalExceptionHandler {
                 .body(new ApiError(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), LocalDateTime.now()));
     }
 
+    @ExceptionHandler(InvalidAddressOwnerException.class)
+    public ResponseEntity<ApiError> handleInvalidAddressOwnerException(InvalidAddressOwnerException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiError(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), LocalDateTime.now()));
+    }
+
 }

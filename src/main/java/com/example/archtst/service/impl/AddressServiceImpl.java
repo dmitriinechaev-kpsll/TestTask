@@ -1,45 +1,48 @@
 package com.example.archtst.service.impl;
 
-import com.example.archtst.entity.Address;
-import com.example.archtst.entity.User;
 import com.example.archtst.enums.AddressType;
 import com.example.archtst.exception.DuplicateResourceException;
 import com.example.archtst.exception.ResourceNotFoundException;
-import com.example.archtst.repository.AddressRepository;
+import com.example.archtst.model.AddressModel;
+import com.example.archtst.model.UserModel;
+import com.example.archtst.persistence.repository.AddressPersistenceService;
 import com.example.archtst.service.AddressService;
+import com.example.archtst.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AddressServiceImpl implements AddressService {
+    @Autowired
+    private UserService userService;
+    private final AddressPersistenceService addressPersistenceService;
 
-    private final AddressRepository addressRepository;
-
-    public Page<Address> getAddressesByUserId(UUID userId, Pageable pageable) {
-        return addressRepository.findAllByUserId(userId, pageable);
+    public Page<AddressModel> getAddressesByUserId(UUID userId, Pageable pageable) {
+        return addressPersistenceService.findAllByUserId(userId, pageable);
     }
 
-    public Address getAddressById(UUID addressId) {
-        return addressRepository.findById(addressId)
+    @Override
+    public AddressModel getAddressById(UUID addressId) {
+        return addressPersistenceService.findById(addressId)
                 .orElseThrow(() -> new ResourceNotFoundException("Адрес с id: " + addressId + " не найден"));
     }
 
     @Override
-    public Address prepareAddressForSaving(User user, Address incomingAddress) {
+    public AddressModel prepareAddressForSaving(UserModel user, AddressModel incomingAddress) {
         if (incomingAddress.getType() == AddressType.HOME) {
-            Optional<Address> existingHome = user.getAddresses().stream()
+            var existingHome = user.getAddresses().stream()
                     .filter(addr -> addr.getType() == AddressType.HOME)
                     .findFirst();
 
             if (existingHome.isPresent()) {
-                Address existing = existingHome.get();
+                AddressModel existing = existingHome.get();
                 existing.setCity(incomingAddress.getCity());
                 existing.setStreet(incomingAddress.getStreet());
                 existing.setHouseNumber(incomingAddress.getHouseNumber());
@@ -61,12 +64,45 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     @Transactional
-    public Address saveAddress(Address address) {
-        return addressRepository.save(address);
+    public AddressModel saveAddress(AddressModel address) {
+        return addressPersistenceService.save(address);
     }
 
+    @Override
     @Transactional
-    public void deleteAddress(Address address) {
-        addressRepository.delete(address);
+    public void deleteAddress(AddressModel address) {
+        var entity = addressPersistenceService.findEntityById(address.getId());
+        addressPersistenceService.delete(entity);
+    }
+
+    @Override
+    @Transactional
+    public AddressModel addAddressToUser(UUID userId, AddressModel incomingAddress) {
+        UserModel user = userService.getUserById(userId);
+        AddressModel addressToSave = prepareAddressForSaving(user, incomingAddress);
+        boolean isCreated = (addressToSave.getId() == null);
+        AddressModel savedAddress = saveAddress(addressToSave);
+        if (isCreated) {
+            user.getAddresses().add(savedAddress);
+        }
+        return savedAddress;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<AddressModel> getUserAddresses(UUID userId, Pageable pageable) {
+        userService.getUserById(userId);
+        return getAddressesByUserId(userId, pageable);
+    }
+
+    @Override
+    @Transactional
+    public void removeAddress(UUID userId, UUID addressId) {
+        UserModel user = userService.getUserById(userId);
+        AddressModel address = getAddressById(addressId);
+        if (!address.getUser().getId().equals(user.getId())) {
+            throw new com.example.archtst.exception.InvalidAddressOwnerException("Этот адрес не принадлежит данному пользователю");
+        }
+        deleteAddress(address);
     }
 }

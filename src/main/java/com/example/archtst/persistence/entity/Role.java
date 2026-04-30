@@ -1,4 +1,4 @@
-package com.example.archtst.entity;
+package com.example.archtst.persistence.entity;
 
 import com.example.archtst.enums.RoleName;
 import jakarta.persistence.*;

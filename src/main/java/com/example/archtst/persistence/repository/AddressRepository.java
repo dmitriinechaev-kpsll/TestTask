@@ -1,6 +1,6 @@
-package com.example.archtst.repository;
+package com.example.archtst.persistence.repository;
 
-import com.example.archtst.entity.Address;
+import com.example.archtst.persistence.entity.Address;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

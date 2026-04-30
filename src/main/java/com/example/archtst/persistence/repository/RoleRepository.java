@@ -1,6 +1,6 @@
-package com.example.archtst.repository;
+package com.example.archtst.persistence.repository;
 
-import com.example.archtst.entity.Role;
+import com.example.archtst.persistence.entity.Role;
 import com.example.archtst.enums.RoleName;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
