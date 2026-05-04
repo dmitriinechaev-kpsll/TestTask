@@ -8,6 +8,7 @@ import com.example.archtst.mapper.UserDtoMapper;
 import com.example.archtst.model.AddressModel;
 import com.example.archtst.model.UserModel;
 import com.example.archtst.enums.RoleName;
+import com.example.archtst.persistence.projection.UserWithRolesProjection;
 import com.example.archtst.service.AddressService;
 import com.example.archtst.service.RoleService;
 import com.example.archtst.service.UserService;
@@ -46,7 +47,7 @@ public class UserControllerImpl implements UserController {
     @GetMapping
     public ResponseEntity<Page<UserResponseDTO>> getAllUsers(
             @PageableDefault(size = 20) Pageable pageable) {
-        Page<UserModel> usersPage = userService.getAllUsers(pageable);
+        Page<UserWithRolesProjection> usersPage = userService.getAllUsers(pageable);
         Page<UserResponseDTO> responsePage = userMapper.pageToResponseDTO(usersPage);
         return ResponseEntity.ok(responsePage);
     }

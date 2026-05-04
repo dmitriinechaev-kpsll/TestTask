@@ -3,6 +3,7 @@ package com.example.archtst.persistence.repository;
 import com.example.archtst.model.UserModel;
 import com.example.archtst.persistence.entity.User;
 import com.example.archtst.persistence.mapper.UserEntityMapper;
+import com.example.archtst.persistence.projection.UserWithRolesProjection;
 import com.example.archtst.persistence.specification.UserSpecification;
 import com.example.archtst.dto.UserSearchCriteria;
 import lombok.RequiredArgsConstructor;
@@ -53,5 +54,9 @@ public class UserPersistenceService {
 
     public Optional<User> findEntityByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+
+    public Page<UserWithRolesProjection> findAllWithRoles(Pageable pageable) {
+        return userRepository.findAllWithRoles(pageable);
     }
 }

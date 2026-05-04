@@ -4,6 +4,7 @@ import com.example.archtst.dto.UserSearchCriteria;
 import com.example.archtst.exception.UserAlreadyExistException;
 import com.example.archtst.exception.UserNotFoundException;
 import com.example.archtst.model.UserModel;
+import com.example.archtst.persistence.projection.UserWithRolesProjection;
 import com.example.archtst.persistence.repository.UserPersistenceService;
 import com.example.archtst.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -36,10 +37,10 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public Page<UserModel> getAllUsers(Pageable pageable) {
+    public Page<UserWithRolesProjection> getAllUsers(Pageable pageable) {
         log.info("Получение всех пользователей (страница: {}, размер: {})",
                 pageable.getPageNumber(), pageable.getPageSize());
-        return userPersistenceService.findAll(pageable);
+        return userPersistenceService.findAllWithRoles(pageable);
     }
 
     @Override
